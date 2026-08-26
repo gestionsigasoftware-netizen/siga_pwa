@@ -30,7 +30,7 @@ export async function getMisAsignaciones() {
       cargos (
         id,
         nombre_cargo,
-        modulos ( id, nombre_modulo, alcance, requiere_zona, congregacion_id )
+        modulos ( id, nombre_modulo, alcance, requiere_zona, congregacion_id, congregaciones ( id, nombre ) )
       )
     `
     )
@@ -48,18 +48,43 @@ export async function getTiposActividad(moduloId) {
   return supabase.from('tipos_actividad').select('id, nombre, caracter').eq('modulo_id', moduloId).eq('activo', true)
 }
 
+export async function getMisRegistros() {
+  const { data: userData } = await supabase.auth.getUser()
+  if (!userData?.user) return { data: [], error: new Error('No autenticado') }
+  const { data: person } = await supabase.from('personas').select('id').eq('auth_user_id', userData.user.id).single()
+  if (!person) return { data: [], error: new Error('Persona no vinculada') }
+  return supabase.from('registros_actividad').select('id, fecha, total_asistentes, modulo_id, tipo_actividad_id, nombre_actividad, tipos_actividad(nombre)').eq('capturado_por', userData.user.id).order('fecha', { ascending: false }).limit(500)
+}
+
+export async function getResumenCongregacion(congregacionId, desde) {
+  return supabase.rpc('resumen_asistencia_movil', {
+    p_congregacion_id: congregacionId,
+    p_desde: desde,
+  })
+}
+
+export async function findDuplicateActivity({ moduloId, tipoActividadId, nombreActividad, zonaId, fecha }) {
+  let query = supabase.from('registros_actividad').select('id').eq('modulo_id', moduloId).eq('fecha', fecha).limit(1)
+  query = tipoActividadId ? query.eq('tipo_actividad_id', tipoActividadId) : query.is('tipo_actividad_id', null)
+  query = nombreActividad ? query.eq('nombre_actividad', nombreActividad) : query.is('nombre_actividad', null)
+  query = zonaId ? query.eq('zona_id', zonaId) : query.is('zona_id', null)
+  return query.maybeSingle()
+}
+
 /**
  * Inserta un registro de actividad — misma tabla `registros_actividad` que
  * consulta el Dashboard web y sus vistas de tendencia/alertas. capturado_por
  * se llena solo (default auth.uid() en el esquema).
  */
-export async function registrarActividad({ congregacionId, moduloId, tipoActividadId, zonaId, responsablePersonaId, desglose, novedades }) {
+export async function registrarActividad({ congregacionId, moduloId, tipoActividadId, nombreActividad, zonaId, responsablePersonaId, fecha, desglose, novedades }) {
   return supabase.from('registros_actividad').insert({
     congregacion_id: congregacionId,
     modulo_id: moduloId,
     tipo_actividad_id: tipoActividadId,
+    nombre_actividad: nombreActividad || null,
     zona_id: zonaId ?? null,
     responsable_persona_id: responsablePersonaId,
+    fecha,
     desglose: desglose ?? {},
     novedades: novedades ?? null,
   })
