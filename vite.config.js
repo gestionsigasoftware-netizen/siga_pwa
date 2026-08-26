@@ -1,0 +1,32 @@
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import { VitePWA } from 'vite-plugin-pwa'
+
+export default defineConfig({
+  plugins: [
+    react(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      includeAssets: ['favicon.ico', 'icons/icon-192.png', 'icons/icon-512.png'],
+      manifest: {
+        name: 'SIGA — Captura',
+        short_name: 'SIGA Captura',
+        description: 'Registro de asistencia — SIGA IPUC',
+        theme_color: '#0B0B0B',
+        background_color: '#FCFCFB',
+        display: 'standalone',
+        orientation: 'portrait',
+        start_url: '/',
+        icons: [
+          { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+          { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
+          { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+        ],
+      },
+      // Sin caché offline de datos — se decidió que no es necesario (ver
+      // especificación maestra). Solo lo mínimo para que "instale" bien.
+      workbox: { globPatterns: ['**/*.{js,css,html,svg,png,ico}'] },
+    }),
+  ],
+  server: { port: 5174, open: true },
+})
