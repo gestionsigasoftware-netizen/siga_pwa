@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ArrowLeft, BarChart3, CalendarDays, Loader2 } from 'lucide-react'
+import { ArrowLeft, BarChart3, CalendarDays } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { getMisRegistros, getResumenCongregacion } from '../lib/supabase'
 import { useMisAsignaciones } from '../hooks/useMisAsignaciones'
+import { SkeletonEstadisticas } from '../components/Skeleton'
 
 const PERIODS = [
   { id: 'dia', label: 'Hoy' },
@@ -79,7 +80,7 @@ export default function Estadisticas() {
   const average = visibleRecords.length ? Math.round(total / visibleRecords.length) : 0
   const max = Math.max(...visibleRecords.map((record) => record.total_asistentes || 0), 1)
 
-  if (loading) return <div className="app-shell"><div className="app-screen flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-accent" /></div></div>
+  if (loading) return <div className="app-shell"><div className="app-screen"><SkeletonEstadisticas /></div></div>
 
   return <div className="app-shell"><div className="app-screen flex flex-col gap-6">
     <header className="app-header"><div className="flex items-center gap-3"><button aria-label="Volver" onClick={() => navigate(-1)} className="w-11 h-11 rounded-xl bg-surface-2 border border-border text-secondary flex items-center justify-center"><ArrowLeft className="w-5 h-5" /></button><div><p className="text-xs uppercase tracking-[0.14em] text-accent font-medium">Resumen personal</p><h1 className="text-xl font-semibold mt-1">Mis estadísticas</h1></div></div><BarChart3 className="w-5 h-5 text-accent" /></header>

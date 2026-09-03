@@ -89,3 +89,36 @@ export async function registrarActividad({ congregacionId, moduloId, tipoActivid
     novedades: novedades ?? null,
   })
 }
+
+/**
+ * Obra Carcelaria no participa del motor genérico (módulo + tipo de
+ * actividad + desglose) — tiene su propio esquema en obra_carcelaria.sql.
+ * El centro de reclusión se filtra por el distrito de la congregación
+ * (centros_reclusion.distrito_id), no por congregación directamente.
+ */
+export async function getCentrosReclusion(congregacionId) {
+  const { data: congregacion, error: congregacionError } = await supabase
+    .from('congregaciones')
+    .select('distrito_id')
+    .eq('id', congregacionId)
+    .single()
+  if (congregacionError || !congregacion) return { data: [], error: congregacionError }
+  return supabase
+    .from('centros_reclusion')
+    .select('id, nombre, tipo, ciudad')
+    .eq('distrito_id', congregacion.distrito_id)
+    .eq('activo', true)
+    .order('nombre')
+}
+
+export async function registrarCultoCarcelaria({ congregacionId, centroId, fecha, patio, asistentesTotal, estudiosBiblicosEntregados, notas }) {
+  return supabase.from('obra_carcelaria_cultos').insert({
+    congregacion_id: congregacionId,
+    centro_id: centroId || null,
+    fecha,
+    patio: patio || null,
+    asistentes_total: asistentesTotal,
+    estudios_biblicos_entregados: estudiosBiblicosEntregados,
+    notas: notas || null,
+  })
+}

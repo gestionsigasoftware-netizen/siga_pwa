@@ -4,6 +4,7 @@ import { ArrowLeft, BarChart3, CalendarDays, CheckCircle2, Loader2, Wifi } from 
 import { useMisAsignaciones } from '../hooks/useMisAsignaciones'
 import { findDuplicateActivity, getCategorias, getTiposActividad, registrarActividad } from '../lib/supabase'
 import { hasPendingCapture, queueCapture, rememberCapture } from '../lib/offline'
+import { SkeletonForm } from '../components/Skeleton'
 
 export default function CapturaActividad() {
   const { asignacionId } = useParams()
@@ -12,6 +13,7 @@ export default function CapturaActividad() {
   const [asignacion, setAsignacion] = useState(null)
   const [categorias, setCategorias] = useState([])
   const [tipos, setTipos] = useState([])
+  const [loadingDetalle, setLoadingDetalle] = useState(true)
   const [tipoId, setTipoId] = useState('')
   const [nombreActividad, setNombreActividad] = useState('')
   const [fecha, setFecha] = useState(() => new Date().toLocaleDateString('en-CA'))
@@ -31,11 +33,19 @@ export default function CapturaActividad() {
 
   useEffect(() => {
     if (!modulo) return
-    getCategorias(modulo.congregacion_id).then(({ data }) => setCategorias(data ?? []))
-    getTiposActividad(modulo.id).then(({ data }) => setTipos(data ?? []))
+    let active = true
+    setLoadingDetalle(true)
+    Promise.all([getCategorias(modulo.congregacion_id), getTiposActividad(modulo.id)]).then(([categoriasRes, tiposRes]) => {
+      if (!active) return
+      if (categoriasRes.error || tiposRes.error) setError('No se pudo cargar el formulario. Verifica tu conexión e intenta de nuevo.')
+      setCategorias(categoriasRes.data ?? [])
+      setTipos(tiposRes.data ?? [])
+      setLoadingDetalle(false)
+    })
+    return () => { active = false }
   }, [modulo])
 
-  if (loadingAsig) return <div className="app-shell"><div className="app-screen flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-accent" /></div></div>
+  if (loadingAsig || (asignacion && loadingDetalle)) return <div className="app-shell"><div className="app-screen"><SkeletonForm /></div></div>
 
   if (!asignacion) return <div className="app-shell"><div className="app-screen flex flex-col items-center justify-center text-center gap-3"><p className="text-secondary">No tienes acceso a este módulo.</p><button onClick={() => navigate('/')} className="text-accent underline text-sm">Volver</button></div></div>
 
@@ -96,7 +106,7 @@ export default function CapturaActividad() {
     <div className="app-header">
       <div className="flex items-center gap-3 min-w-0">
         <button aria-label="Volver a módulos" onClick={() => navigate('/')} className="w-11 h-11 flex-shrink-0 rounded-xl bg-surface-2 border border-border text-secondary flex items-center justify-center active:scale-[0.96] transition-transform"><ArrowLeft className="w-5 h-5" /></button>
-        <div className="min-w-0"><p className="text-xs uppercase tracking-[0.14em] text-accent font-medium">Registro de asistencia</p><h1 className="text-lg font-semibold truncate mt-1">{modulo?.nombre_modulo}</h1><p className="text-sm text-secondary truncate">{modulo?.congregaciones?.nombre || 'Congregación sin nombre'}</p><p className="text-xs text-muted truncate">{asignacion.cargos?.nombre_cargo}{asignacion.zonas?.nombre ? ` — ${asignacion.zonas.nombre}` : ''}</p></div>
+        <div className="min-w-0"><p className="text-[11px] uppercase tracking-[0.08em] text-accent font-medium whitespace-nowrap">Registro de asistencia</p><h1 className="text-lg font-semibold truncate mt-1">{modulo?.nombre_modulo}</h1><p className="text-sm text-secondary truncate">{modulo?.congregaciones?.nombre || 'Congregación sin nombre'}</p><p className="text-xs text-muted truncate">{asignacion.cargos?.nombre_cargo}{asignacion.zonas?.nombre ? ` — ${asignacion.zonas.nombre}` : ''}</p></div>
       </div>
       <div className="flex items-center gap-3"><button aria-label="Ver estadísticas" onClick={() => navigate('/estadisticas')} className="w-10 h-10 rounded-xl bg-surface-2 border border-border text-accent flex items-center justify-center"><BarChart3 className="w-4 h-4" /></button><Wifi className="w-4 h-4 text-success flex-shrink-0" aria-label="Conectado" /></div>
     </div>
