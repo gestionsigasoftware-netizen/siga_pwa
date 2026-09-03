@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ArrowLeft, BarChart3, CalendarDays } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { getMisRegistros, getResumenCongregacion } from '../lib/supabase'
+import { getMisRegistros, getResumenCongregacion, getMisCultosCarcelaria, getCultosCarcelariaCongregacion } from '../lib/supabase'
 import { useMisAsignaciones } from '../hooks/useMisAsignaciones'
 import { SkeletonEstadisticas } from '../components/Skeleton'
 
@@ -54,6 +54,11 @@ export default function Estadisticas() {
       setRecords(data ?? [])
       setLoading(false)
     })
+    // Obra Carcelaria vive en su propia tabla (no en registros_actividad) --
+    // se agrega aparte para que tampoco quede fuera de "Mis estadísticas".
+    getMisCultosCarcelaria().then(({ data }) => {
+      if (data?.length) setRecords((current) => [...current, ...data])
+    })
   }, [])
 
   const { asignaciones } = useMisAsignaciones()
@@ -61,9 +66,13 @@ export default function Estadisticas() {
 
   useEffect(() => {
     if (!congregationId) return
-    getResumenCongregacion(congregationId, `${new Date().getFullYear()}-01-01`).then(({ data, error: loadError }) => {
+    const desde = `${new Date().getFullYear()}-01-01`
+    getResumenCongregacion(congregationId, desde).then(({ data, error: loadError }) => {
       if (loadError) setError(explainError(loadError, 'No se pudo cargar el resumen de la congregación.'))
       setCongregationRecords(data ?? [])
+    })
+    getCultosCarcelariaCongregacion(congregationId, desde).then(({ data }) => {
+      if (data?.length) setCongregationRecords((current) => [...current, ...data])
     })
   }, [congregationId])
 

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft, BarChart3, CalendarDays, CheckCircle2, Loader2, Wifi } from 'lucide-react'
 import { useMisAsignaciones } from '../hooks/useMisAsignaciones'
-import { getCentrosReclusion, registrarCultoCarcelaria } from '../lib/supabase'
+import { findDuplicateCultoCarcelaria, getCentrosReclusion, registrarCultoCarcelaria } from '../lib/supabase'
 import { hasPendingCultoCarcelaria, queueCapture, rememberCapture } from '../lib/offline'
 import { SkeletonForm } from '../components/Skeleton'
 
@@ -57,6 +57,11 @@ export default function CapturaCarcelaria() {
       setError('Ya tienes este registro pendiente de sincronizar en el dispositivo.')
       return
     }
+    if (navigator.onLine) {
+      const { data: duplicate, error: duplicateError } = await findDuplicateCultoCarcelaria({ congregacionId: modulo.congregacion_id, centroId: centroId || null, fecha, patio: patio.trim() })
+      if (duplicateError) { setError('No se pudo verificar si ya existe un registro.'); return }
+      if (duplicate) { setError('Ya existe un registro para ese centro, patio y fecha.'); return }
+    }
     setConfirming(true)
   }
 
@@ -71,6 +76,7 @@ export default function CapturaCarcelaria() {
       patio: patio.trim(),
       asistentesTotal: total,
       estudiosBiblicosEntregados: parseInt(estudios, 10) || 0,
+      responsablePersonaId: asignacion.persona_id,
       notas,
     }
     if (!navigator.onLine) {

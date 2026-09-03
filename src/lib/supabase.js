@@ -25,6 +25,7 @@ export async function getMisAsignaciones() {
     .select(
       `
       id,
+      persona_id,
       zona_id,
       zonas ( id, nombre ),
       cargos (
@@ -111,7 +112,14 @@ export async function getCentrosReclusion(congregacionId) {
     .order('nombre')
 }
 
-export async function registrarCultoCarcelaria({ congregacionId, centroId, fecha, patio, asistentesTotal, estudiosBiblicosEntregados, notas }) {
+export async function findDuplicateCultoCarcelaria({ congregacionId, centroId, fecha, patio }) {
+  let query = supabase.from('obra_carcelaria_cultos').select('id').eq('congregacion_id', congregacionId).eq('fecha', fecha).limit(1)
+  query = centroId ? query.eq('centro_id', centroId) : query.is('centro_id', null)
+  query = patio ? query.eq('patio', patio) : query.is('patio', null)
+  return query.maybeSingle()
+}
+
+export async function registrarCultoCarcelaria({ congregacionId, centroId, fecha, patio, asistentesTotal, estudiosBiblicosEntregados, responsablePersonaId, notas }) {
   return supabase.from('obra_carcelaria_cultos').insert({
     congregacion_id: congregacionId,
     centro_id: centroId || null,
@@ -119,6 +127,28 @@ export async function registrarCultoCarcelaria({ congregacionId, centroId, fecha
     patio: patio || null,
     asistentes_total: asistentesTotal,
     estudios_biblicos_entregados: estudiosBiblicosEntregados,
+    responsable_persona_id: responsablePersonaId || null,
     notas: notas || null,
   })
+}
+
+/**
+ * Obra Carcelaria no tiene columna `capturado_por` (a diferencia de
+ * registros_actividad) -- "mis cultos" se identifica por
+ * responsable_persona_id, que el formulario llena con quien captura.
+ * Se normaliza a la misma forma que getMisRegistros() para que
+ * Estadisticas.jsx pueda mezclarlos sin lógica adicional.
+ */
+export async function getMisCultosCarcelaria() {
+  const { data: userData } = await supabase.auth.getUser()
+  if (!userData?.user) return { data: [], error: new Error('No autenticado') }
+  const { data: person } = await supabase.from('personas').select('id').eq('auth_user_id', userData.user.id).single()
+  if (!person) return { data: [], error: new Error('Persona no vinculada') }
+  const { data, error } = await supabase.from('obra_carcelaria_cultos').select('id, fecha, asistentes_total').eq('responsable_persona_id', person.id).order('fecha', { ascending: false }).limit(500)
+  return { data: (data ?? []).map((row) => ({ id: row.id, fecha: row.fecha, total_asistentes: row.asistentes_total, nombre_actividad: 'Culto carcelario' })), error }
+}
+
+export async function getCultosCarcelariaCongregacion(congregacionId, desde) {
+  const { data, error } = await supabase.from('obra_carcelaria_cultos').select('id, fecha, asistentes_total').eq('congregacion_id', congregacionId).gte('fecha', desde).order('fecha', { ascending: false })
+  return { data: (data ?? []).map((row) => ({ id: row.id, fecha: row.fecha, total_asistentes: row.asistentes_total, nombre_actividad: 'Culto carcelario' })), error }
 }
