@@ -7,6 +7,8 @@ import { SkeletonHome } from '../components/Skeleton'
 import { getPendingCaptures, getRecentCaptures, syncPendingCaptures } from '../lib/offline'
 import { registrarActividad, registrarCultoCarcelaria } from '../lib/supabase'
 import { MODULOS_CONOCIDOS, buscarAsignacion, esModuloObraCarcelaria } from '../lib/modulos'
+import Footer from '../components/Footer'
+import sigapLogo from '../assets/sigap-logo.svg'
 
 const ICONOS = { ujieres: DoorOpen, evangelismo: Compass, mision_juvenil: BookOpen, obra_carcelaria: LockKeyhole }
 
@@ -60,7 +62,7 @@ export default function Home() {
 
   return <div className="app-shell"><div className="app-screen flex flex-col gap-6">
     <header className="app-header">
-      <div className="flex items-center gap-3"><div className="app-mark">S</div><div><p className="font-semibold tracking-wide">SIGA</p><p className="text-xs text-secondary mt-0.5">Captura móvil</p></div></div>
+      <div className="flex items-center gap-3"><img src={sigapLogo} alt="SIGAP" className="h-6 w-auto" /><span className="w-px h-6 bg-border" /><p className="text-sm text-secondary">Captura móvil</p></div>
       <div className={`status-pill ${isOnline ? 'bg-success-bg text-success' : 'bg-warning-bg text-warning'}`}><span className={`status-dot ${isOnline ? 'bg-success' : 'bg-warning'}`} />{isOnline ? <Wifi className="w-3.5 h-3.5" /> : <WifiOff className="w-3.5 h-3.5" />}{isOnline ? 'Conectado' : 'Sin conexión'}</div>
     </header>
     {pendingCount > 0 && <div className="app-card flex items-center gap-3 p-4 border-warning/40 bg-warning-bg"><RefreshCw className="w-5 h-5 text-warning flex-shrink-0" /><div><p className="text-sm font-medium text-warning">{pendingCount} registro{pendingCount > 1 ? 's' : ''} pendiente{pendingCount > 1 ? 's' : ''}</p><p className="text-xs text-secondary mt-0.5">Se enviará{pendingCount > 1 ? 'n' : ''} automáticamente al recuperar la conexión.</p></div></div>}
@@ -80,5 +82,6 @@ export default function Home() {
     <button onClick={() => navigate('/estadisticas')} className="app-card flex items-center justify-center gap-2 p-4 text-sm font-medium text-accent active:scale-[0.98] transition-transform"><BarChart3 className="w-4 h-4" /> Ver mis estadísticas</button>
     {recentCaptures.length > 0 && <section><div className="flex items-center gap-2 mb-3"><Clock3 className="w-4 h-4 text-accent" /><h2 className="text-sm font-medium">Registros recientes</h2></div><div className="app-card divide-y divide-border">{recentCaptures.slice(0, 4).map((capture) => <div key={capture.id} className="p-3 flex items-center justify-between gap-3"><span className="text-sm text-secondary truncate">{capture.label}</span><span className="text-xs text-success flex-shrink-0">Sincronizado</span></div>)}</div></section>}
     <button onClick={signOut} className="flex items-center gap-2 text-sm text-secondary mt-auto self-center py-3 px-4"><LogOut className="w-4 h-4" /> Cerrar sesión</button>
+    <Footer />
   </div></div>
 }

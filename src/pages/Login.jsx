@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowUpRight, Eye, EyeOff, Loader2, LockKeyhole, Mail, ShieldCheck } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
+import sigapLogoWhite from '../assets/sigap-logo-white.svg'
 
 export default function Login() {
   const { signIn } = useAuth()
@@ -29,12 +30,9 @@ export default function Login() {
         <header className="bg-ink text-white px-6 pt-6 pb-16 sm:px-8 sm:pt-8 sm:pb-20 overflow-hidden relative">
           <div className="absolute -right-16 -top-20 w-48 h-48 rounded-full border-[28px] border-accent/30" />
           <div className="relative">
-            <div className="flex items-center gap-5">
-              <div className="w-16 h-16 rounded-2xl bg-accent text-white flex items-center justify-center font-semibold text-3xl shadow-lg shadow-accent/25">S</div>
-              <div>
-                <p className="text-2xl font-semibold tracking-wide leading-none">SIGA</p>
-                <p className="text-sm text-white/65 mt-2">IPUC · Gestión pastoral</p>
-              </div>
+            <div>
+              <img src={sigapLogoWhite} alt="SIGAP" className="h-8 w-auto" />
+              <p className="text-[10px] uppercase tracking-[0.16em] text-white/45 mt-2">Gestión y Analítica Pastoral</p>
             </div>
             <div className="mt-10 max-w-sm">
               <p className="text-xs uppercase tracking-[0.16em] text-white/60">Registro móvil de asistencia</p>
@@ -46,7 +44,7 @@ export default function Login() {
 
         <section className="p-6 sm:p-8 -mt-1 bg-transparent">
           <div className="mb-7">
-            <p className="text-sm font-medium text-[#165b9f] mb-2">Tu espacio SIGA</p>
+            <p className="text-sm font-medium text-[#165b9f] mb-2">Tu espacio SIGAP</p>
             <h1 className="text-2xl font-semibold tracking-tight">Ingresa para comenzar</h1>
             <p className="text-sm text-secondary mt-2 leading-6">Usa tu cuenta para registrar la asistencia de tu congregación.</p>
           </div>
@@ -80,7 +78,7 @@ export default function Login() {
         <footer className="flex items-center justify-center gap-2 mt-6 text-xs text-muted">
           <ShieldCheck className="w-4 h-4 text-success" /> Tus datos están protegidos.
         </footer>
-        <p className="text-center text-xs text-muted mt-8">IPUC · Gestión pastoral</p>
+        <p className="text-center text-xs text-muted mt-8">SIGAP · Gestión pastoral</p>
       </main>
     </div>
   )
