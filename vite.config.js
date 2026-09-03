@@ -9,9 +9,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'icons/icon-192.png', 'icons/icon-512.png'],
       manifest: {
-        name: 'SIGA — Captura',
-        short_name: 'SIGA Captura',
-        description: 'Registro de asistencia — SIGA IPUC',
+        name: 'SIGAP — Captura',
+        short_name: 'SIGAP',
+        description: 'Registro de asistencia — SIGAP',
         theme_color: '#0B0B0B',
         background_color: '#FCFCFB',
         display: 'standalone',

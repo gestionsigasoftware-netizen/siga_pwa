@@ -7,7 +7,6 @@ import { SkeletonHome } from '../components/Skeleton'
 import { getPendingCaptures, getRecentCaptures, syncPendingCaptures } from '../lib/offline'
 import { registrarActividad, registrarCultoCarcelaria } from '../lib/supabase'
 import { MODULOS_CONOCIDOS, buscarAsignacion, esModuloObraCarcelaria } from '../lib/modulos'
-import Footer from '../components/Footer'
 import sigapLogo from '../assets/sigap-logo.svg'
 
 const ICONOS = { ujieres: DoorOpen, evangelismo: Compass, mision_juvenil: BookOpen, obra_carcelaria: LockKeyhole }
@@ -82,6 +81,5 @@ export default function Home() {
     <button onClick={() => navigate('/estadisticas')} className="app-card flex items-center justify-center gap-2 p-4 text-sm font-medium text-accent active:scale-[0.98] transition-transform"><BarChart3 className="w-4 h-4" /> Ver mis estadísticas</button>
     {recentCaptures.length > 0 && <section><div className="flex items-center gap-2 mb-3"><Clock3 className="w-4 h-4 text-accent" /><h2 className="text-sm font-medium">Registros recientes</h2></div><div className="app-card divide-y divide-border">{recentCaptures.slice(0, 4).map((capture) => <div key={capture.id} className="p-3 flex items-center justify-between gap-3"><span className="text-sm text-secondary truncate">{capture.label}</span><span className="text-xs text-success flex-shrink-0">Sincronizado</span></div>)}</div></section>}
     <button onClick={signOut} className="flex items-center gap-2 text-sm text-secondary mt-auto self-center py-3 px-4"><LogOut className="w-4 h-4" /> Cerrar sesión</button>
-    <Footer />
   </div></div>
 }

@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom'
 import { getMisRegistros, getResumenCongregacion } from '../lib/supabase'
 import { useMisAsignaciones } from '../hooks/useMisAsignaciones'
 import { SkeletonEstadisticas } from '../components/Skeleton'
-import Footer from '../components/Footer'
 
 const PERIODS = [
   { id: 'dia', label: 'Hoy' },
@@ -90,6 +89,5 @@ export default function Estadisticas() {
     {error && <p role="alert" className="text-sm text-danger bg-danger-bg rounded-xl p-3">{error}</p>}
     <section className="grid grid-cols-2 gap-3"><div className="app-card p-4"><p className="text-xs text-secondary">Asistentes acumulados</p><p className="text-3xl font-semibold text-accent mt-2">{total}</p></div><div className="app-card p-4"><p className="text-xs text-secondary">Cultos registrados</p><p className="text-3xl font-semibold mt-2">{visibleRecords.length}</p></div><div className="app-card p-4"><p className="text-xs text-secondary">Promedio por culto</p><p className="text-3xl font-semibold mt-2">{average}</p></div><div className="app-card p-4"><p className="text-xs text-secondary">Periodo</p><p className="text-lg font-semibold mt-3">{PERIODS.find((item) => item.id === period)?.label}</p></div></section>
     <section><div className="flex items-center gap-2 mb-3"><CalendarDays className="w-4 h-4 text-accent" /><h2 className="text-sm font-medium">{scope === 'personal' ? 'Mis cultos registrados' : 'Asistencia de la congregación'}</h2></div>{visibleRecords.length ? <div className="app-card p-4 flex flex-col gap-4">{[...visibleRecords].sort((a, b) => b.fecha.localeCompare(a.fecha)).map((record) => <div key={`${record.fecha}-${record.id || record.registros}`}><div className="flex items-center justify-between gap-3 mb-1.5"><span className="text-xs text-secondary">{new Date(`${record.fecha}T12:00:00`).toLocaleDateString('es-CO', { day: '2-digit', month: 'short' })}{record.nombre_actividad ? ` · ${record.nombre_actividad}` : record.tipos_actividad?.nombre ? ` · ${record.tipos_actividad.nombre}` : ''}</span><span className="text-sm font-semibold">{record.total_asistentes}</span></div><div className="h-2 rounded-full bg-surface-1 overflow-hidden"><div className="h-full rounded-full bg-accent" style={{ width: `${Math.max((record.total_asistentes / max) * 100, 3)}%` }} /></div></div>)}</div> : <div className="app-card p-6 text-center text-sm text-secondary">No hay registros en este periodo.</div>}</section>
-    <Footer />
   </div></div>
 }
