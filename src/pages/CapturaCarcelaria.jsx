@@ -94,7 +94,7 @@ export default function CapturaCarcelaria() {
     <div className="app-header">
       <div className="flex items-center gap-3 min-w-0">
         <button aria-label="Volver a módulos" onClick={() => navigate('/')} className="w-11 h-11 flex-shrink-0 rounded-xl bg-surface-2 border border-border text-secondary flex items-center justify-center active:scale-[0.96] transition-transform"><ArrowLeft className="w-5 h-5" /></button>
-        <div className="min-w-0"><p className="text-[11px] uppercase tracking-[0.08em] text-accent font-medium whitespace-nowrap">Registro carcelario</p><h1 className="text-lg font-semibold truncate mt-1">{modulo?.nombre_modulo}</h1><p className="text-sm text-secondary truncate">{modulo?.congregaciones?.nombre || 'Congregación sin nombre'}</p><p className="text-xs text-muted truncate">{asignacion.cargos?.nombre_cargo}</p></div>
+        <div className="min-w-0"><p className="text-[11px] uppercase tracking-[0.08em] text-accent font-medium whitespace-nowrap">Registro carcelario</p><h1 className="text-lg font-semibold truncate mt-1">{modulo?.nombre_modulo}</h1><p className="text-sm text-secondary truncate">{modulo?.congregaciones?.nombre || 'Congregación sin nombre'}</p><p className="text-xs text-muted truncate">Acceso habilitado</p></div>
       </div>
       <div className="flex items-center gap-3"><button aria-label="Ver estadísticas" onClick={() => navigate('/estadisticas')} className="w-10 h-10 rounded-xl bg-surface-2 border border-border text-accent flex items-center justify-center"><BarChart3 className="w-4 h-4" /></button><Wifi className="w-4 h-4 text-success flex-shrink-0" aria-label="Conectado" /></div>
     </div>

@@ -73,7 +73,7 @@ export default function Home() {
       return <button key={modulo.id} onClick={() => elegirModulo(modulo)} className={`app-card flex items-center justify-between p-5 text-left active:scale-[0.98] transition-transform ${asignado ? '' : 'opacity-60'}`}>
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-10 h-10 rounded-xl bg-surface-1 flex items-center justify-center text-accent flex-shrink-0"><Icono className="w-5 h-5" /></div>
-          <div className="min-w-0"><p className="font-medium truncate">{modulo.nombre}</p><p className="text-sm text-secondary">{asignado ? 'Capturador PWA' : 'Sin acceso asignado'}</p></div>
+          <div className="min-w-0"><p className="font-medium truncate">{modulo.nombre}</p><p className="text-sm text-secondary">{asignado ? 'Acceso habilitado' : 'Sin acceso asignado'}</p></div>
         </div>
         <ChevronRight className="w-5 h-5 text-muted flex-shrink-0" />
       </button>
