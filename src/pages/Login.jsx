@@ -24,10 +24,9 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col justify-center px-5 py-6 sm:py-8 bg-surface-1">
-      <main className="w-full max-w-md mx-auto">
-        <div className="overflow-hidden rounded-3xl bg-surface-2 border border-border shadow-[0_16px_48px_rgba(21,27,34,0.1)]">
-        <header className="bg-ink text-white px-6 pt-6 pb-16 sm:px-8 sm:pt-8 sm:pb-20 overflow-hidden relative">
+    <div className="min-h-screen flex flex-col bg-surface-2 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
+      <main className="w-full max-w-md mx-auto flex-1 flex flex-col">
+        <header className="bg-ink text-white px-6 pt-8 pb-14 sm:px-8 overflow-hidden relative flex-shrink-0">
           <div className="absolute -right-16 -top-20 w-48 h-48 rounded-full border-[28px] border-accent/30" />
           <div className="relative">
             <div>
@@ -42,7 +41,7 @@ export default function Login() {
           </div>
         </header>
 
-        <section className="p-6 sm:p-8 -mt-1 bg-transparent">
+        <section className="px-6 sm:px-8 pt-7 pb-6 -mt-6 rounded-t-3xl bg-surface-2 flex-1 flex flex-col">
           <div className="mb-7">
             <p className="text-sm font-medium text-[#165b9f] mb-2">Tu espacio SIGAP</p>
             <h1 className="text-2xl font-semibold tracking-tight">Ingresa para comenzar</h1>
@@ -72,13 +71,12 @@ export default function Login() {
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Ingresar <ArrowUpRight className="w-4 h-4" /></>}
             </button>
           </form>
-        </section>
-        </div>
 
-        <footer className="flex items-center justify-center gap-2 mt-6 text-xs text-muted">
-          <ShieldCheck className="w-4 h-4 text-success" /> Tus datos están protegidos.
-        </footer>
-        <p className="text-center text-xs text-muted mt-8">SIGAP · Gestión pastoral</p>
+          <div className="mt-auto pt-8 flex flex-col items-center gap-3">
+            <p className="flex items-center justify-center gap-2 text-xs text-muted"><ShieldCheck className="w-4 h-4 text-success" /> Tus datos están protegidos.</p>
+            <p className="text-center text-xs text-muted">SIGAP · Gestión pastoral</p>
+          </div>
+        </section>
       </main>
     </div>
   )
