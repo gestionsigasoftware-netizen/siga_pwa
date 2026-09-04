@@ -113,6 +113,27 @@ export async function registrarActividad({ congregacionId, moduloId, tipoActivid
 }
 
 /**
+ * Registra un Amigo nuevo desde la PWA -- misma tabla `amigos` que usa
+ * "Amigos en ruta" en la web, para que el pastor le dé seguimiento sin
+ * duplicar el registro. zonaId siempre es la zona propia del capturador
+ * (asignacion.zona_id) -- la RLS de `amigos` (tengo_acceso_zona) exige que
+ * coincida exactamente con la zona de su cargo, así que no es editable.
+ */
+export async function registrarAmigo({ congregacionId, zonaId, nombres, telefono, direccion, sector, invitadoPor, fechaPrimerContacto, evangelismoMetodologiaId }) {
+  return supabase.from('amigos').insert({
+    congregacion_id: congregacionId,
+    zona_id: zonaId ?? null,
+    nombres,
+    telefono: telefono || null,
+    direccion: direccion || null,
+    sector: sector || null,
+    invitado_por: invitadoPor || null,
+    fecha_primer_contacto: fechaPrimerContacto,
+    evangelismo_metodologia_id: evangelismoMetodologiaId || null,
+  })
+}
+
+/**
  * Obra Carcelaria no participa del motor genérico (módulo + tipo de
  * actividad + desglose) — tiene su propio esquema en obra_carcelaria.sql.
  * El centro de reclusión se filtra por el distrito de la congregación

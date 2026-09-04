@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ChevronRight, LogOut, Wifi, WifiOff, RefreshCw, Clock3, BarChart3, DoorOpen, Compass, BookOpen, LockKeyhole } from 'lucide-react'
+import { ChevronRight, LogOut, Wifi, WifiOff, RefreshCw, Clock3, BarChart3, DoorOpen, Compass, BookOpen, LockKeyhole, UserPlus } from 'lucide-react'
 import { useMisAsignaciones } from '../hooks/useMisAsignaciones'
 import { useAuth } from '../hooks/useAuth'
 import { SkeletonHome } from '../components/Skeleton'
 import { getPendingCaptures, getRecentCaptures, syncPendingCaptures } from '../lib/offline'
-import { registrarActividad, registrarCultoCarcelaria } from '../lib/supabase'
+import { registrarActividad, registrarCultoCarcelaria, registrarAmigo } from '../lib/supabase'
 import { MODULOS_CONOCIDOS, buscarAsignacion, esModuloObraCarcelaria } from '../lib/modulos'
 import sigapLogo from '../assets/sigap-logo.svg'
 
@@ -26,7 +26,7 @@ export default function Home() {
 
   async function syncCaptures() {
     if (!navigator.onLine) return
-    const result = await syncPendingCaptures({ actividad: registrarActividad, obra_carcelaria: registrarCultoCarcelaria })
+    const result = await syncPendingCaptures({ actividad: registrarActividad, obra_carcelaria: registrarCultoCarcelaria, amigo: registrarAmigo })
     setPendingCount(result.pending)
     setRecentCaptures(getRecentCaptures())
   }
@@ -69,14 +69,19 @@ export default function Home() {
     {avisoSinPermiso && <p role="alert" className="text-sm text-danger bg-danger-bg rounded-xl p-3">No tienes permisos para {avisoSinPermiso}. Contacta al pastor de tu congregación para solicitar acceso.</p>}
     <div className="flex flex-col gap-3">{MODULOS_CONOCIDOS.map((modulo) => {
       const Icono = ICONOS[modulo.id]
-      const asignado = Boolean(buscarAsignacion(asignaciones, modulo))
-      return <button key={modulo.id} onClick={() => elegirModulo(modulo)} className={`app-card flex items-center justify-between p-5 text-left active:scale-[0.98] transition-transform ${asignado ? '' : 'opacity-60'}`}>
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="w-10 h-10 rounded-xl bg-surface-1 flex items-center justify-center text-accent flex-shrink-0"><Icono className="w-5 h-5" /></div>
-          <div className="min-w-0"><p className="font-medium truncate">{modulo.nombre}</p><p className="text-sm text-secondary">{asignado ? 'Acceso habilitado' : 'Sin acceso asignado'}</p></div>
-        </div>
-        <ChevronRight className="w-5 h-5 text-muted flex-shrink-0" />
-      </button>
+      const assignment = buscarAsignacion(asignaciones, modulo)
+      const asignado = Boolean(assignment)
+      const permiteAmigos = asignado && Boolean(assignment.cargos?.modulos?.requiere_zona)
+      return <div key={modulo.id} className={`app-card overflow-hidden ${asignado ? '' : 'opacity-60'}`}>
+        <button onClick={() => elegirModulo(modulo)} className="w-full flex items-center justify-between p-5 text-left active:scale-[0.98] transition-transform">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-xl bg-surface-1 flex items-center justify-center text-accent flex-shrink-0"><Icono className="w-5 h-5" /></div>
+            <div className="min-w-0"><p className="font-medium truncate">{modulo.nombre}</p><p className="text-sm text-secondary">{asignado ? 'Acceso habilitado' : 'Sin acceso asignado'}</p></div>
+          </div>
+          <ChevronRight className="w-5 h-5 text-muted flex-shrink-0" />
+        </button>
+        {permiteAmigos && <button onClick={() => navigate(`/captura-amigo/${assignment.id}`)} className="w-full flex items-center gap-2 px-5 py-3 text-sm font-medium text-accent border-t border-border active:scale-[0.98] transition-transform"><UserPlus className="w-4 h-4" /> Registrar amigo nuevo</button>}
+      </div>
     })}</div>
     <button onClick={() => navigate('/estadisticas')} className="app-card flex items-center justify-center gap-2 p-4 text-sm font-medium text-accent active:scale-[0.98] transition-transform"><BarChart3 className="w-4 h-4" /> Ver mis estadísticas</button>
     {recentCaptures.length > 0 && <section><div className="flex items-center gap-2 mb-3"><Clock3 className="w-4 h-4 text-accent" /><h2 className="text-sm font-medium">Registros recientes</h2></div><div className="app-card divide-y divide-border">{recentCaptures.slice(0, 4).map((capture) => <div key={capture.id} className="p-3 flex items-center justify-between gap-3"><span className="text-sm text-secondary truncate">{capture.label}</span><span className="text-xs text-success flex-shrink-0">Sincronizado</span></div>)}</div></section>}
