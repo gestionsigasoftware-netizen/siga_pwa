@@ -9,7 +9,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'icons/icon-192.png', 'icons/icon-512.png'],
       manifest: {
-        name: 'SIGAP — Captura',
+        name: 'SIGAP — Móvil',
         short_name: 'SIGAP',
         description: 'Registro de asistencia — SIGAP',
         theme_color: '#0B0B0B',
