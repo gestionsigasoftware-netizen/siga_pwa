@@ -58,19 +58,20 @@ export async function getCaracteresCulto(congregacionId) {
   return supabase.from('caracteres_culto').select('id, nombre').eq('congregacion_id', congregacionId).eq('activo', true).order('nombre')
 }
 
-export async function getMisRegistros() {
+/**
+ * Estadisticas SIEMPRE filtradas por un modulo especifico -- antes se
+ * mezclaban todos los modulos de la persona/congregacion en una sola
+ * lista (ej. Ujieres y Obra Carcelaria juntos), lo que hacia ilegibles
+ * los totales para alguien con mas de una responsabilidad operativa.
+ */
+export async function getMisRegistrosPorModulo(moduloId) {
   const { data: userData } = await supabase.auth.getUser()
   if (!userData?.user) return { data: [], error: new Error('No autenticado') }
-  const { data: person } = await supabase.from('personas').select('id').eq('auth_user_id', userData.user.id).single()
-  if (!person) return { data: [], error: new Error('Persona no vinculada') }
-  return supabase.from('registros_actividad').select('id, fecha, total_asistentes, modulo_id, tipo_actividad_id, nombre_actividad, tipos_actividad(nombre)').eq('capturado_por', userData.user.id).order('fecha', { ascending: false }).limit(500)
+  return supabase.from('registros_actividad').select('id, fecha, total_asistentes, nombre_actividad, tipos_actividad(nombre)').eq('capturado_por', userData.user.id).eq('modulo_id', moduloId).order('fecha', { ascending: false }).limit(500)
 }
 
-export async function getResumenCongregacion(congregacionId, desde) {
-  return supabase.rpc('resumen_asistencia_movil', {
-    p_congregacion_id: congregacionId,
-    p_desde: desde,
-  })
+export async function getCongregacionRegistrosPorModulo(congregacionId, moduloId, desde) {
+  return supabase.from('registros_actividad').select('id, fecha, total_asistentes, nombre_actividad, tipos_actividad(nombre)').eq('congregacion_id', congregacionId).eq('modulo_id', moduloId).gte('fecha', desde).order('fecha', { ascending: false }).limit(500)
 }
 
 export async function findDuplicateActivity({ moduloId, tipoActividadId, nombreActividad, zonaId, fecha }) {
@@ -146,8 +147,8 @@ export async function registrarCultoCarcelaria({ congregacionId, centroId, fecha
  * Obra Carcelaria no tiene columna `capturado_por` (a diferencia de
  * registros_actividad) -- "mis cultos" se identifica por
  * responsable_persona_id, que el formulario llena con quien captura.
- * Se normaliza a la misma forma que getMisRegistros() para que
- * Estadisticas.jsx pueda mezclarlos sin lógica adicional.
+ * Se normaliza a la misma forma que un registro de registros_actividad
+ * para que Estadisticas.jsx la pueda mostrar con la misma lógica.
  */
 export async function getMisCultosCarcelaria() {
   const { data: userData } = await supabase.auth.getUser()

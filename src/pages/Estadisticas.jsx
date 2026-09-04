@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ArrowLeft, BarChart3, CalendarDays } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { getMisRegistros, getResumenCongregacion, getMisCultosCarcelaria, getCultosCarcelariaCongregacion } from '../lib/supabase'
+import { getMisRegistrosPorModulo, getCongregacionRegistrosPorModulo, getMisCultosCarcelaria, getCultosCarcelariaCongregacion } from '../lib/supabase'
 import { useMisAsignaciones } from '../hooks/useMisAsignaciones'
+import { esModuloObraCarcelaria } from '../lib/modulos'
 import { SkeletonEstadisticas } from '../components/Skeleton'
 
 const PERIODS = [
@@ -68,47 +69,56 @@ function previousRangeFor(period) {
 
 export default function Estadisticas() {
   const navigate = useNavigate()
+  const { asignaciones, loading: loadingAsignaciones } = useMisAsignaciones()
   const [period, setPeriod] = useState('mes')
   const [scope, setScope] = useState('personal')
+  const [moduloId, setModuloId] = useState(null)
   const [records, setRecords] = useState([])
   const [congregationRecords, setCongregationRecords] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [loadingDatos, setLoadingDatos] = useState(true)
   const [error, setError] = useState(null)
 
   function explainError(loadError, defaultMessage) {
     const message = loadError?.message?.toLowerCase() || ''
     if (message.includes('nombre_actividad') || message.includes('column')) return 'Falta activar la migración de cultos personalizados. Ejecuta actividad_personalizada.sql en Supabase.'
-    if (message.includes('resumen_asistencia_movil') || message.includes('function')) return 'Falta activar el resumen congregacional. Ejecuta estadisticas_movil.sql en Supabase.'
     return defaultMessage
   }
 
-  useEffect(() => {
-    getMisRegistros().then(({ data, error: loadError }) => {
-      if (loadError) setError(explainError(loadError, 'No se pudieron cargar tus estadísticas.'))
-      setRecords(data ?? [])
-      setLoading(false)
+  // Los modulos que esta cuenta realmente tiene asignados -- ya no se mezcla
+  // todo en una sola lista (ej. Ujieres y Obra Carcelaria juntos), cada uno
+  // se ve por separado.
+  const misModulos = useMemo(() => {
+    const vistos = new Map()
+    asignaciones.forEach((a) => {
+      const m = a.cargos?.modulos
+      if (m?.id && !vistos.has(m.id)) vistos.set(m.id, { id: m.id, nombre: m.nombre_modulo, esCarcelaria: esModuloObraCarcelaria(m.nombre_modulo) })
     })
-    // Obra Carcelaria vive en su propia tabla (no en registros_actividad) --
-    // se agrega aparte para que tampoco quede fuera de "Mis estadísticas".
-    getMisCultosCarcelaria().then(({ data }) => {
-      if (data?.length) setRecords((current) => [...current, ...data])
-    })
-  }, [])
+    return Array.from(vistos.values())
+  }, [asignaciones])
 
-  const { asignaciones } = useMisAsignaciones()
+  useEffect(() => {
+    if (!moduloId && misModulos.length) setModuloId(misModulos[0].id)
+  }, [misModulos, moduloId])
+
+  const moduloActivo = misModulos.find((m) => m.id === moduloId) ?? null
   const congregationId = asignaciones[0]?.cargos?.modulos?.congregacion_id
 
   useEffect(() => {
-    if (!congregationId) return
+    if (!moduloActivo) { setLoadingDatos(false); return }
+    setLoadingDatos(true)
+    setError(null)
     const desde = `${new Date().getFullYear()}-01-01`
-    getResumenCongregacion(congregationId, desde).then(({ data, error: loadError }) => {
-      if (loadError) setError(explainError(loadError, 'No se pudo cargar el resumen de la congregación.'))
-      setCongregationRecords(data ?? [])
+    const personalFetch = moduloActivo.esCarcelaria ? getMisCultosCarcelaria() : getMisRegistrosPorModulo(moduloActivo.id)
+    const congregacionFetch = congregationId
+      ? (moduloActivo.esCarcelaria ? getCultosCarcelariaCongregacion(congregationId, desde) : getCongregacionRegistrosPorModulo(congregationId, moduloActivo.id, desde))
+      : Promise.resolve({ data: [] })
+    Promise.all([personalFetch, congregacionFetch]).then(([personalRes, congregacionRes]) => {
+      if (personalRes.error) setError(explainError(personalRes.error, 'No se pudieron cargar tus estadísticas.'))
+      setRecords(personalRes.data ?? [])
+      setCongregationRecords(congregacionRes.data ?? [])
+      setLoadingDatos(false)
     })
-    getCultosCarcelariaCongregacion(congregationId, desde).then(({ data }) => {
-      if (data?.length) setCongregationRecords((current) => [...current, ...data])
-    })
-  }, [congregationId])
+  }, [moduloActivo?.id, congregationId])
 
   const visiblePersonalRecords = useMemo(() => {
     const start = dateKey(startForPeriod(period))
@@ -133,10 +143,13 @@ export default function Estadisticas() {
   const previousTotal = previousRecords.reduce((sum, record) => sum + (record.total_asistentes || 0), 0)
   const tendencia = previousRecords.length ? Math.round(((total - previousTotal) / (previousTotal || total || 1)) * 100) : null
 
-  if (loading) return <div className="app-shell"><div className="app-screen"><SkeletonEstadisticas /></div></div>
+  if (loadingAsignaciones || loadingDatos) return <div className="app-shell"><div className="app-screen"><SkeletonEstadisticas /></div></div>
+
+  if (!moduloActivo) return <div className="app-shell"><div className="app-screen flex flex-col items-center justify-center text-center gap-3"><p className="text-secondary">Aún no tienes ningún módulo asignado.</p><button onClick={() => navigate('/')} className="text-accent underline text-sm">Volver</button></div></div>
 
   return <div className="app-shell"><div className="app-screen flex flex-col gap-6">
     <header className="app-header"><div className="flex items-center gap-3"><button aria-label="Volver" onClick={() => navigate(-1)} className="w-11 h-11 rounded-xl bg-surface-2 border border-border text-secondary flex items-center justify-center"><ArrowLeft className="w-5 h-5" /></button><div><p className="text-xs uppercase tracking-[0.14em] text-accent font-medium">Resumen personal</p><h1 className="text-xl font-semibold mt-1">Mis estadísticas</h1></div></div><BarChart3 className="w-5 h-5 text-accent" /></header>
+    {misModulos.length > 1 && <div className="flex flex-wrap gap-2">{misModulos.map((m) => <button key={m.id} type="button" onClick={() => setModuloId(m.id)} className={`rounded-full px-4 py-2 text-sm font-medium border transition-colors ${moduloId === m.id ? 'bg-ink text-white border-ink' : 'bg-surface-2 text-secondary border-border'}`}>{m.nombre}</button>)}</div>}
     <div className="grid grid-cols-2 gap-2"><button type="button" onClick={() => setScope('personal')} className={`rounded-xl px-3 py-3 text-sm font-medium border ${scope === 'personal' ? 'bg-ink text-white border-ink' : 'bg-surface-2 text-secondary border-border'}`}>Mis registros</button><button type="button" onClick={() => setScope('congregacion')} className={`rounded-xl px-3 py-3 text-sm font-medium border ${scope === 'congregacion' ? 'bg-ink text-white border-ink' : 'bg-surface-2 text-secondary border-border'}`}>Congregación</button></div>
     <div>
       <div className="grid grid-cols-5 gap-1.5">{PERIODS.map((item) => <button key={item.id} type="button" onClick={() => setPeriod(item.id)} className={`rounded-xl py-2 text-xs font-medium border transition-colors ${period === item.id ? 'bg-ink text-white border-ink' : 'bg-surface-2 text-secondary border-border'}`}>{item.short}</button>)}</div>
@@ -152,6 +165,6 @@ export default function Estadisticas() {
         {tendencia === null ? <p className="text-sm font-medium mt-3 text-muted">Sin periodo anterior</p> : <p className={`text-3xl font-semibold mt-2 ${tendencia >= 0 ? 'text-success' : 'text-danger'}`}>{tendencia >= 0 ? '+' : ''}{tendencia}%</p>}
       </div>
     </section>
-    <section><div className="flex items-center gap-2 mb-3"><CalendarDays className="w-4 h-4 text-accent" /><h2 className="text-sm font-medium">{scope === 'personal' ? 'Mis cultos registrados' : 'Asistencia de la congregación'}</h2></div>{visibleRecords.length ? <div className="app-card p-4 flex flex-col gap-4">{[...visibleRecords].sort((a, b) => b.fecha.localeCompare(a.fecha)).map((record) => <div key={`${record.fecha}-${record.id || record.registros}`}><div className="flex items-center justify-between gap-3 mb-1.5"><span className="text-xs text-secondary">{new Date(`${record.fecha}T12:00:00`).toLocaleDateString('es-CO', { day: '2-digit', month: 'short' })}{record.nombre_actividad ? ` · ${record.nombre_actividad}` : record.tipos_actividad?.nombre ? ` · ${record.tipos_actividad.nombre}` : ''}</span><span className="text-sm font-semibold">{record.total_asistentes}</span></div><div className="h-2 rounded-full bg-surface-1 overflow-hidden"><div className="h-full rounded-full bg-accent" style={{ width: `${Math.max((record.total_asistentes / max) * 100, 3)}%` }} /></div></div>)}</div> : <div className="app-card p-6 text-center text-sm text-secondary">No hay registros en este periodo.</div>}</section>
+    <section><div className="flex items-center gap-2 mb-3"><CalendarDays className="w-4 h-4 text-accent" /><h2 className="text-sm font-medium">{scope === 'personal' ? `Mis cultos de ${moduloActivo.nombre}` : `${moduloActivo.nombre} — congregación`}</h2></div>{visibleRecords.length ? <div className="app-card p-4 flex flex-col gap-4">{[...visibleRecords].sort((a, b) => b.fecha.localeCompare(a.fecha)).map((record) => <div key={record.id}><div className="flex items-center justify-between gap-3 mb-1.5"><span className="text-xs text-secondary">{new Date(`${record.fecha}T12:00:00`).toLocaleDateString('es-CO', { day: '2-digit', month: 'short' })}{record.nombre_actividad ? ` · ${record.nombre_actividad}` : record.tipos_actividad?.nombre ? ` · ${record.tipos_actividad.nombre}` : ''}</span><span className="text-sm font-semibold">{record.total_asistentes}</span></div><div className="h-2 rounded-full bg-surface-1 overflow-hidden"><div className="h-full rounded-full bg-accent" style={{ width: `${Math.max((record.total_asistentes / max) * 100, 3)}%` }} /></div></div>)}</div> : <div className="app-card p-6 text-center text-sm text-secondary">No hay registros en este periodo.</div>}</section>
   </div></div>
 }
