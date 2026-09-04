@@ -12,7 +12,7 @@ export default defineConfig({
         name: 'SIGAP — Móvil',
         short_name: 'SIGAP',
         description: 'Registro de asistencia — SIGAP',
-        theme_color: '#0B0B0B',
+        theme_color: '#FCFCFB',
         background_color: '#FCFCFB',
         display: 'standalone',
         orientation: 'portrait',
