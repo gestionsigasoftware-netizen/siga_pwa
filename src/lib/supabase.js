@@ -49,6 +49,15 @@ export async function getTiposActividad(moduloId) {
   return supabase.from('tipos_actividad').select('id, nombre, caracter').eq('modulo_id', moduloId).eq('activo', true)
 }
 
+/**
+ * Catálogo de "caracter" de culto (Enseñanza, Alabanza, Evangelismo...),
+ * administrado desde la web (Modulos.jsx) -- se elige al capturar para que
+ * el mismo tipo de culto recurrente pueda variar de caracter cada vez.
+ */
+export async function getCaracteresCulto(congregacionId) {
+  return supabase.from('caracteres_culto').select('id, nombre').eq('congregacion_id', congregacionId).eq('activo', true).order('nombre')
+}
+
 export async function getMisRegistros() {
   const { data: userData } = await supabase.auth.getUser()
   if (!userData?.user) return { data: [], error: new Error('No autenticado') }
@@ -77,7 +86,7 @@ export async function findDuplicateActivity({ moduloId, tipoActividadId, nombreA
  * consulta el Dashboard web y sus vistas de tendencia/alertas. capturado_por
  * se llena solo (default auth.uid() en el esquema).
  */
-export async function registrarActividad({ congregacionId, moduloId, tipoActividadId, nombreActividad, zonaId, responsablePersonaId, fecha, desglose, novedades }) {
+export async function registrarActividad({ congregacionId, moduloId, tipoActividadId, nombreActividad, zonaId, responsablePersonaId, caracterId, fecha, desglose, novedades }) {
   return supabase.from('registros_actividad').insert({
     congregacion_id: congregacionId,
     modulo_id: moduloId,
@@ -85,6 +94,7 @@ export async function registrarActividad({ congregacionId, moduloId, tipoActivid
     nombre_actividad: nombreActividad || null,
     zona_id: zonaId ?? null,
     responsable_persona_id: responsablePersonaId,
+    caracter_id: caracterId || null,
     fecha,
     desglose: desglose ?? {},
     novedades: novedades ?? null,
