@@ -2,6 +2,10 @@ export function esModuloObraCarcelaria(nombreModulo) {
   return /carcelari/i.test(nombreModulo || '')
 }
 
+export function esModuloUjieres(nombreModulo) {
+  return /ujier/i.test(nombreModulo || '')
+}
+
 /**
  * Las 4 areas extramurales/Ujieres que captura esta PWA, siempre visibles
  * en Home aunque la cuenta no tenga acceso a todas -- el permiso se valida

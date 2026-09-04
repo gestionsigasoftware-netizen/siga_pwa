@@ -59,6 +59,15 @@ export async function getCaracteresCulto(congregacionId) {
 }
 
 /**
+ * Lista fija de ujieres (catalogo propio, no censo) -- para elegir cual de
+ * ellos fue el responsable de un culto especifico, sin depender de que
+ * cuenta este usando el celular ese dia.
+ */
+export async function getUjieresCongregacion(congregacionId) {
+  return supabase.from('ujieres_congregacion').select('id, nombre').eq('congregacion_id', congregacionId).eq('activo', true).order('nombre')
+}
+
+/**
  * Estadisticas SIEMPRE filtradas por un modulo especifico -- antes se
  * mezclaban todos los modulos de la persona/congregacion en una sola
  * lista (ej. Ujieres y Obra Carcelaria juntos), lo que hacia ilegibles
@@ -87,7 +96,7 @@ export async function findDuplicateActivity({ moduloId, tipoActividadId, nombreA
  * consulta el Dashboard web y sus vistas de tendencia/alertas. capturado_por
  * se llena solo (default auth.uid() en el esquema).
  */
-export async function registrarActividad({ congregacionId, moduloId, tipoActividadId, nombreActividad, zonaId, responsablePersonaId, caracterId, fecha, desglose, novedades }) {
+export async function registrarActividad({ congregacionId, moduloId, tipoActividadId, nombreActividad, zonaId, responsablePersonaId, caracterId, ujierResponsableId, fecha, desglose, novedades }) {
   return supabase.from('registros_actividad').insert({
     congregacion_id: congregacionId,
     modulo_id: moduloId,
@@ -96,6 +105,7 @@ export async function registrarActividad({ congregacionId, moduloId, tipoActivid
     zona_id: zonaId ?? null,
     responsable_persona_id: responsablePersonaId,
     caracter_id: caracterId || null,
+    ujier_responsable_id: ujierResponsableId || null,
     fecha,
     desglose: desglose ?? {},
     novedades: novedades ?? null,
