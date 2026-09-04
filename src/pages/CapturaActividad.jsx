@@ -80,7 +80,7 @@ export default function CapturaActividad() {
       tipoActividadId: tipoId === '__otro__' ? null : tipoId,
       nombreActividad: tipoId === '__otro__' ? nombreActividad.trim() : null,
       zonaId: asignacion.zona_id,
-      responsablePersonaId: null,
+      responsablePersonaId: asignacion.persona_id,
       fecha,
       desglose,
       novedades,
