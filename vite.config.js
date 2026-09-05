@@ -28,5 +28,8 @@ export default defineConfig({
       workbox: { globPatterns: ['**/*.{js,css,html,svg,png,ico}'] },
     }),
   ],
-  server: { port: 5174, open: true },
+  // strictPort: falla en vez de derivar en silencio a otro puerto si
+  // 5174 ya esta ocupado (evita confundir un servidor en el puerto
+  // equivocado con uno que no arranco).
+  server: { port: 5174, strictPort: true, open: true },
 })
