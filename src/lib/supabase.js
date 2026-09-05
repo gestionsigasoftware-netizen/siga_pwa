@@ -174,6 +174,21 @@ export async function registrarCultoCarcelaria({ congregacionId, centroId, fecha
   })
 }
 
+// Cuando un interno se entrega durante un culto -- equivalente a
+// registrarAmigo() pero para Obra Carcelaria, que no usa zonas sino
+// centro de reclusion + patio.
+export async function registrarInterno({ congregacionId, centroId, nombres, apellidos, patio, fechaIngresoMinisterio, observaciones }) {
+  return supabase.from('obra_carcelaria_internos').insert({
+    congregacion_id: congregacionId,
+    centro_id: centroId || null,
+    nombres,
+    apellidos,
+    patio: patio || null,
+    fecha_ingreso_ministerio: fechaIngresoMinisterio,
+    observaciones: observaciones || null,
+  })
+}
+
 /**
  * Obra Carcelaria no tiene columna `capturado_por` (a diferencia de
  * registros_actividad) -- "mis cultos" se identifica por

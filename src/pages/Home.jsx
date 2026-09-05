@@ -5,7 +5,7 @@ import { useMisAsignaciones } from '../hooks/useMisAsignaciones'
 import { useAuth } from '../hooks/useAuth'
 import { SkeletonHome } from '../components/Skeleton'
 import { getPendingCaptures, getRecentCaptures, syncPendingCaptures } from '../lib/offline'
-import { registrarActividad, registrarCultoCarcelaria, registrarAmigo } from '../lib/supabase'
+import { registrarActividad, registrarCultoCarcelaria, registrarAmigo, registrarInterno } from '../lib/supabase'
 import { MODULOS_CONOCIDOS, buscarAsignacion, esModuloObraCarcelaria } from '../lib/modulos'
 import sigapLogo from '../assets/sigap-logo.svg'
 
@@ -26,7 +26,7 @@ export default function Home() {
 
   async function syncCaptures() {
     if (!navigator.onLine) return
-    const result = await syncPendingCaptures({ actividad: registrarActividad, obra_carcelaria: registrarCultoCarcelaria, amigo: registrarAmigo })
+    const result = await syncPendingCaptures({ actividad: registrarActividad, obra_carcelaria: registrarCultoCarcelaria, amigo: registrarAmigo, interno_carcelaria: registrarInterno })
     setPendingCount(result.pending)
     setRecentCaptures(getRecentCaptures())
   }
@@ -72,6 +72,7 @@ export default function Home() {
       const assignment = buscarAsignacion(asignaciones, modulo)
       const asignado = Boolean(assignment)
       const permiteAmigos = asignado && Boolean(assignment.cargos?.modulos?.requiere_zona)
+      const permiteInternos = asignado && esModuloObraCarcelaria(assignment.cargos?.modulos?.nombre_modulo)
       return <div key={modulo.id} className={`app-card overflow-hidden ${asignado ? '' : 'opacity-60'}`}>
         <button onClick={() => elegirModulo(modulo)} className="w-full flex items-center justify-between p-5 text-left active:scale-[0.98] transition-transform">
           <div className="flex items-center gap-3 min-w-0">
@@ -81,6 +82,7 @@ export default function Home() {
           <ChevronRight className="w-5 h-5 text-muted flex-shrink-0" />
         </button>
         {permiteAmigos && <button onClick={() => navigate(`/captura-amigo/${assignment.id}`)} className="w-full flex items-center gap-2 px-5 py-3 text-sm font-medium text-accent border-t border-border active:scale-[0.98] transition-transform"><UserPlus className="w-4 h-4" /> Registrar amigo nuevo</button>}
+        {permiteInternos && <button onClick={() => navigate(`/captura-interno/${assignment.id}`)} className="w-full flex items-center gap-2 px-5 py-3 text-sm font-medium text-accent border-t border-border active:scale-[0.98] transition-transform"><UserPlus className="w-4 h-4" /> Registrar interno nuevo</button>}
       </div>
     })}</div>
     <button onClick={() => navigate('/estadisticas')} className="app-card flex items-center justify-center gap-2 p-4 text-sm font-medium text-accent active:scale-[0.98] transition-transform"><BarChart3 className="w-4 h-4" /> Ver mis estadísticas</button>

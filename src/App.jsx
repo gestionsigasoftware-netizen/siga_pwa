@@ -5,6 +5,7 @@ import Home from './pages/Home'
 import CapturaActividad from './pages/CapturaActividad'
 import CapturaCarcelaria from './pages/CapturaCarcelaria'
 import CapturaAmigo from './pages/CapturaAmigo'
+import CapturaInternoNuevo from './pages/CapturaInternoNuevo'
 import Estadisticas from './pages/Estadisticas'
 
 // La barra de estado del sistema se dejó siempre clara (ver index.html):
@@ -22,6 +23,7 @@ export default function App() {
         <Route path="/captura/:asignacionId" element={<ProtectedRoute><CapturaActividad /></ProtectedRoute>} />
         <Route path="/captura-carcelaria/:asignacionId" element={<ProtectedRoute><CapturaCarcelaria /></ProtectedRoute>} />
         <Route path="/captura-amigo/:asignacionId" element={<ProtectedRoute><CapturaAmigo /></ProtectedRoute>} />
+        <Route path="/captura-interno/:asignacionId" element={<ProtectedRoute><CapturaInternoNuevo /></ProtectedRoute>} />
         <Route path="/estadisticas" element={<ProtectedRoute><Estadisticas /></ProtectedRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
