@@ -6,7 +6,7 @@ import { useAuth } from '../hooks/useAuth'
 import { SkeletonHome } from '../components/Skeleton'
 import { getPendingCaptures, getRecentCaptures, syncPendingCaptures } from '../lib/offline'
 import { registrarActividad, registrarCultoCarcelaria, registrarAmigo, registrarInterno } from '../lib/supabase'
-import { MODULOS_CONOCIDOS, buscarAsignacion, esModuloObraCarcelaria } from '../lib/modulos'
+import { MODULOS_CONOCIDOS, buscarAsignacion, esModuloObraCarcelaria, esModuloUjieres } from '../lib/modulos'
 import sigapLogo from '../assets/sigap-logo.svg'
 
 const ICONOS = { ujieres: DoorOpen, evangelismo: Compass, mision_juvenil: BookOpen, obra_carcelaria: LockKeyhole }
@@ -71,7 +71,7 @@ export default function Home() {
       const Icono = ICONOS[modulo.id]
       const assignment = buscarAsignacion(asignaciones, modulo)
       const asignado = Boolean(assignment)
-      const permiteAmigos = asignado && Boolean(assignment.cargos?.modulos?.requiere_zona)
+      const permiteAmigos = asignado && (Boolean(assignment.cargos?.modulos?.requiere_zona) || esModuloUjieres(assignment.cargos?.modulos?.nombre_modulo))
       const permiteInternos = asignado && esModuloObraCarcelaria(assignment.cargos?.modulos?.nombre_modulo)
       return <div key={modulo.id} className={`app-card overflow-hidden ${asignado ? '' : 'opacity-60'}`}>
         <button onClick={() => elegirModulo(modulo)} className="w-full flex items-center justify-between p-5 text-left active:scale-[0.98] transition-transform">

@@ -2,11 +2,11 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft, CalendarDays, CheckCircle2, Loader2, Wifi } from 'lucide-react'
 import { useMisAsignaciones } from '../hooks/useMisAsignaciones'
-import { getTiposActividad, registrarAmigo } from '../lib/supabase'
+import { getComites, getTiposActividad, registrarAmigo } from '../lib/supabase'
 import { queueCapture, rememberCapture } from '../lib/offline'
 import { SkeletonForm } from '../components/Skeleton'
 
-const CAMPOS_VACIOS = { nombres: '', telefono: '', direccion: '', sector: '', invitadoPor: '', metodologiaId: '' }
+const CAMPOS_VACIOS = { nombres: '', telefono: '', direccion: '', sector: '', invitadoPor: '', metodologiaId: '', comiteId: '' }
 
 export default function CapturaAmigo() {
   const { asignacionId } = useParams()
@@ -14,6 +14,7 @@ export default function CapturaAmigo() {
   const { asignaciones, loading: loadingAsig } = useMisAsignaciones()
   const [asignacion, setAsignacion] = useState(null)
   const [metodologias, setMetodologias] = useState([])
+  const [comites, setComites] = useState([])
   const [loadingDetalle, setLoadingDetalle] = useState(true)
   const [campos, setCampos] = useState(CAMPOS_VACIOS)
   const [fecha, setFecha] = useState(() => new Date().toLocaleDateString('en-CA'))
@@ -33,9 +34,13 @@ export default function CapturaAmigo() {
     if (!modulo) return
     let active = true
     setLoadingDetalle(true)
-    Promise.resolve(esEvangelismo ? getTiposActividad(modulo.id) : { data: [] }).then((res) => {
+    Promise.all([
+      esEvangelismo ? getTiposActividad(modulo.id) : Promise.resolve({ data: [] }),
+      getComites(modulo.congregacion_id),
+    ]).then(([metodologiasRes, comitesRes]) => {
       if (!active) return
-      setMetodologias(res.data ?? [])
+      setMetodologias(metodologiasRes.data ?? [])
+      setComites(comitesRes.data ?? [])
       setLoadingDetalle(false)
     })
     return () => { active = false }
@@ -45,7 +50,9 @@ export default function CapturaAmigo() {
 
   if (!asignacion) return <div className="app-shell"><div className="app-screen flex flex-col items-center justify-center text-center gap-3"><p className="text-secondary">No tienes acceso a este módulo.</p><button onClick={() => navigate('/')} className="text-accent underline text-sm">Volver</button></div></div>
 
-  if (!asignacion.zona_id) return <div className="app-shell"><div className="app-screen flex flex-col items-center justify-center text-center gap-3 px-6"><p className="text-secondary">Tu cargo todavía no tiene una zona asignada. Pide al pastor de tu congregación que te la asigne desde "Equipo de trabajo" antes de registrar amigos.</p><button onClick={() => navigate('/')} className="text-accent underline text-sm">Volver</button></div></div>
+  // Solo los módulos que organizan su trabajo por zona (Evangelismo, Misión Juvenil) exigen zona --
+  // Ujieres no maneja zonas (recibe/ubica en el salón, no administra territorio) y puede registrar amigos sin una.
+  if (modulo?.requiere_zona && !asignacion.zona_id) return <div className="app-shell"><div className="app-screen flex flex-col items-center justify-center text-center gap-3 px-6"><p className="text-secondary">Tu cargo todavía no tiene una zona asignada. Pide al pastor de tu congregación que te la asigne desde "Equipo de trabajo" antes de registrar amigos.</p><button onClick={() => navigate('/')} className="text-accent underline text-sm">Volver</button></div></div>
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -53,7 +60,7 @@ export default function CapturaAmigo() {
     setError(null)
     const payload = {
       congregacionId: modulo.congregacion_id,
-      zonaId: asignacion.zona_id,
+      zonaId: asignacion.zona_id ?? null,
       nombres: campos.nombres.trim(),
       telefono: campos.telefono.trim(),
       direccion: campos.direccion.trim(),
@@ -61,6 +68,7 @@ export default function CapturaAmigo() {
       invitadoPor: campos.invitadoPor.trim(),
       fechaPrimerContacto: fecha,
       evangelismoMetodologiaId: campos.metodologiaId || null,
+      comiteOrigenId: campos.comiteId || null,
     }
     setSaving(true)
     if (!navigator.onLine) {
@@ -95,6 +103,7 @@ export default function CapturaAmigo() {
       <div><label className="text-sm font-medium block mb-1.5">Sector <span className="text-xs text-muted">(opcional)</span></label><input value={campos.sector} onChange={(e) => setCampos({ ...campos, sector: e.target.value })} className="input-field" placeholder="Ej: Barrio La Esperanza" /></div>
       <div><label className="text-sm font-medium block mb-1.5">Invitado por <span className="text-xs text-muted">(opcional)</span></label><input value={campos.invitadoPor} onChange={(e) => setCampos({ ...campos, invitadoPor: e.target.value })} className="input-field" placeholder="Ej: Juan Pérez" /></div>
       {esEvangelismo && metodologias.length > 0 && <div><label className="text-sm font-medium block mb-1.5">Metodología <span className="text-xs text-muted">(opcional)</span></label><select value={campos.metodologiaId} onChange={(e) => setCampos({ ...campos, metodologiaId: e.target.value })} className="input-field"><option value="">Sin especificar</option>{metodologias.map((m) => <option key={m.id} value={m.id}>{m.nombre}</option>)}</select></div>}
+      {comites.length > 0 && <div><label className="text-sm font-medium block mb-1.5">Comité que lo recibió <span className="text-xs text-muted">(opcional)</span></label><select value={campos.comiteId} onChange={(e) => setCampos({ ...campos, comiteId: e.target.value })} className="input-field"><option value="">Sin especificar</option>{comites.map((c) => <option key={c.id} value={c.id}>{c.nombre}</option>)}</select></div>}
       <div><label htmlFor="fecha-contacto" className="text-sm font-medium block mb-1.5">Fecha de primer contacto</label><div className="relative"><CalendarDays className="w-4 h-4 text-muted absolute left-4 top-1/2 -translate-y-1/2" /><input id="fecha-contacto" type="date" max={new Date().toLocaleDateString('en-CA')} value={fecha} onChange={(e) => setFecha(e.target.value)} className="input-field pl-11" /></div></div>
       {error && <p className="text-sm text-danger text-center">{error}</p>}
       <button type="submit" disabled={saving} className="btn-primary flex items-center justify-center gap-2 py-4 shadow-lg shadow-ink/10">{saving ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Guardar amigo'}</button>

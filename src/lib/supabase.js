@@ -68,6 +68,17 @@ export async function getUjieresCongregacion(congregacionId) {
 }
 
 /**
+ * Comites de la congregacion (catalogo libre, cada congregacion crea
+ * los suyos) -- para el selector opcional "comite que lo recibio" al
+ * registrar un amigo nuevo. Requiere la politica RLS "comites_read_cargo"
+ * (tengo_cargo_activo_rls.sql) para que un cargo sin rol de pastor
+ * pueda leerlos.
+ */
+export async function getComites(congregacionId) {
+  return supabase.from('comites').select('id, nombre').eq('congregacion_id', congregacionId).eq('activo', true).order('nombre')
+}
+
+/**
  * Estadisticas SIEMPRE filtradas por un modulo especifico -- antes se
  * mezclaban todos los modulos de la persona/congregacion en una sola
  * lista (ej. Ujieres y Obra Carcelaria juntos), lo que hacia ilegibles
@@ -116,10 +127,16 @@ export async function registrarActividad({ congregacionId, moduloId, tipoActivid
  * Registra un Amigo nuevo desde la PWA -- misma tabla `amigos` que usa
  * "Amigos en ruta" en la web, para que el pastor le dé seguimiento sin
  * duplicar el registro. zonaId siempre es la zona propia del capturador
- * (asignacion.zona_id) -- la RLS de `amigos` (tengo_acceso_zona) exige que
- * coincida exactamente con la zona de su cargo, así que no es editable.
+ * (asignacion.zona_id) cuando el módulo la exige (Evangelismo/Misión
+ * Juvenil) -- la RLS de `amigos` (tengo_acceso_zona) exige que coincida
+ * exactamente con la zona de su cargo. Para módulos sin zona (Ujieres,
+ * intramural) zonaId es null y el insert pasa por la política
+ * "amigos_insert_cargo" (tengo_cargo_activo) en vez de tengo_acceso_zona.
+ * comiteOrigenId es siempre opcional -- el capturador (ej. un ujier) no
+ * necesariamente sabe a qué comité le corresponde esa persona; si no lo
+ * sabe, se asigna después desde la web.
  */
-export async function registrarAmigo({ congregacionId, zonaId, nombres, telefono, direccion, sector, invitadoPor, fechaPrimerContacto, evangelismoMetodologiaId }) {
+export async function registrarAmigo({ congregacionId, zonaId, nombres, telefono, direccion, sector, invitadoPor, fechaPrimerContacto, evangelismoMetodologiaId, comiteOrigenId }) {
   return supabase.from('amigos').insert({
     congregacion_id: congregacionId,
     zona_id: zonaId ?? null,
@@ -130,6 +147,7 @@ export async function registrarAmigo({ congregacionId, zonaId, nombres, telefono
     invitado_por: invitadoPor || null,
     fecha_primer_contacto: fechaPrimerContacto,
     evangelismo_metodologia_id: evangelismoMetodologiaId || null,
+    comite_origen_id: comiteOrigenId || null,
   })
 }
 
