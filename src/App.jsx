@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import ProtectedRoute from './components/ProtectedRoute'
 import Login from './pages/Login'
 import Home from './pages/Home'
@@ -7,6 +7,7 @@ import CapturaCarcelaria from './pages/CapturaCarcelaria'
 import CapturaAmigo from './pages/CapturaAmigo'
 import CapturaInternoNuevo from './pages/CapturaInternoNuevo'
 import Estadisticas from './pages/Estadisticas'
+import NotFound from './pages/NotFound'
 
 // La barra de estado del sistema se dejó siempre clara (ver index.html):
 // Android no tiene forma confiable de forzar iconos claros sobre un fondo
@@ -25,7 +26,7 @@ export default function App() {
         <Route path="/captura-amigo/:asignacionId" element={<ProtectedRoute><CapturaAmigo /></ProtectedRoute>} />
         <Route path="/captura-interno/:asignacionId" element={<ProtectedRoute><CapturaInternoNuevo /></ProtectedRoute>} />
         <Route path="/estadisticas" element={<ProtectedRoute><Estadisticas /></ProtectedRoute>} />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   )
