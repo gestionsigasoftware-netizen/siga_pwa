@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { ArrowUpRight, Eye, EyeOff, Loader2, LockKeyhole, Mail, ShieldCheck } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import sigapLogoWhite from '../assets/sigap-logo-white.svg'
+import EnterIllustration from '../components/illustrations/EnterIllustration'
 
 export default function Login() {
   const { signIn } = useAuth()
@@ -40,10 +41,13 @@ export default function Login() {
               <img src={sigapLogoWhite} alt="SIGAP" className="h-8 w-auto" />
               <p className="text-[10px] uppercase tracking-[0.16em] text-white/45 mt-2">Gestión y Analítica Pastoral</p>
             </div>
-            <div className="mt-10 max-w-sm">
-              <p className="text-xs uppercase tracking-[0.16em] text-white/60">Registro móvil de asistencia</p>
-              <h2 className="text-2xl font-semibold leading-tight mt-3">Registra la asistencia de tu congregación.</h2>
-              <p className="text-sm text-white/65 leading-6 mt-3">Una forma sencilla, clara y oportuna de mantener tus registros al día.</p>
+            <div className="mt-10 max-w-sm flex items-end gap-4">
+              <div className="min-w-0">
+                <p className="text-xs uppercase tracking-[0.16em] text-white/60">Registro móvil de asistencia</p>
+                <h2 className="text-2xl font-semibold leading-tight mt-3">Registra la asistencia de tu congregación.</h2>
+                <p className="text-sm text-white/65 leading-6 mt-3">Una forma sencilla, clara y oportuna de mantener tus registros al día.</p>
+              </div>
+              <div className="w-20 h-20 rounded-full bg-white/95 flex items-center justify-center p-3 flex-shrink-0"><EnterIllustration className="w-full h-auto" /></div>
             </div>
           </div>
         </header>
