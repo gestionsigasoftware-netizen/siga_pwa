@@ -1,18 +1,18 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ArrowLeft, BarChart3, CalendarDays } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { getMisRegistrosPorModulo, getCongregacionRegistrosPorModulo, getMisCultosCarcelaria, getCultosCarcelariaCongregacion } from '../lib/supabase'
 import { useMisAsignaciones } from '../hooks/useMisAsignaciones'
 import { esModuloObraCarcelaria } from '../lib/modulos'
 import { SkeletonEstadisticas } from '../components/Skeleton'
+import i18n from '../i18n'
 
-const PERIODS = [
-  { id: 'dia', label: 'Hoy', short: 'Hoy' },
-  { id: 'semana', label: 'Semana', short: 'Sem' },
-  { id: 'mes', label: 'Mes', short: 'Mes' },
-  { id: 'semestre', label: 'Semestre', short: '6M' },
-  { id: 'ano', label: 'Año', short: 'Año' },
-]
+const PERIODS = ['dia', 'semana', 'mes', 'semestre', 'ano']
+
+function localeActual() {
+  return i18n.language === 'en' ? 'en-US' : i18n.language === 'pt' ? 'pt-BR' : 'es-CO'
+}
 
 function dateKey(date) {
   const year = date.getFullYear()
@@ -42,17 +42,18 @@ function capitalize(text) {
 // corresponde.
 function resolvedPeriodLabel(period) {
   const start = startForPeriod(period)
-  if (period === 'dia') return capitalize(start.toLocaleDateString('es-CO', { day: 'numeric', month: 'long' }))
+  const locale = localeActual()
+  if (period === 'dia') return capitalize(start.toLocaleDateString(locale, { day: 'numeric', month: 'long' }))
   if (period === 'semana') {
     const end = new Date(start)
     end.setDate(end.getDate() + 6)
     const mismoMes = start.getMonth() === end.getMonth()
-    const inicio = mismoMes ? `${start.getDate()}` : start.toLocaleDateString('es-CO', { day: 'numeric', month: 'long' })
-    return `${inicio} al ${end.toLocaleDateString('es-CO', { day: 'numeric', month: 'long' })}`
+    const inicio = mismoMes ? `${start.getDate()}` : start.toLocaleDateString(locale, { day: 'numeric', month: 'long' })
+    return i18n.t('estadisticas.semanaRango', { inicio, fin: end.toLocaleDateString(locale, { day: 'numeric', month: 'long' }) })
   }
-  if (period === 'mes') return capitalize(start.toLocaleDateString('es-CO', { month: 'long', year: 'numeric' }))
-  if (period === 'semestre') return `${start.getMonth() === 0 ? 'Primer' : 'Segundo'} semestre ${start.getFullYear()}`
-  return `Año ${start.getFullYear()}`
+  if (period === 'mes') return capitalize(start.toLocaleDateString(locale, { month: 'long', year: 'numeric' }))
+  if (period === 'semestre') return i18n.t(start.getMonth() === 0 ? 'estadisticas.primerSemestre' : 'estadisticas.segundoSemestre', { anio: start.getFullYear() })
+  return i18n.t('estadisticas.anioLabel', { anio: start.getFullYear() })
 }
 
 // Mismo rango de duracion, inmediatamente anterior al periodo elegido -- para
@@ -68,6 +69,7 @@ function previousRangeFor(period) {
 }
 
 export default function Estadisticas() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { asignaciones, loading: loadingAsignaciones } = useMisAsignaciones()
   const [period, setPeriod] = useState('mes')
@@ -80,7 +82,7 @@ export default function Estadisticas() {
 
   function explainError(loadError, defaultMessage) {
     const message = loadError?.message?.toLowerCase() || ''
-    if (message.includes('nombre_actividad') || message.includes('column')) return 'Falta activar la migración de cultos personalizados. Ejecuta actividad_personalizada.sql en Supabase.'
+    if (message.includes('nombre_actividad') || message.includes('column')) return t('estadisticas.errorMigracion')
     return defaultMessage
   }
 
@@ -113,7 +115,7 @@ export default function Estadisticas() {
       ? (moduloActivo.esCarcelaria ? getCultosCarcelariaCongregacion(congregationId, desde) : getCongregacionRegistrosPorModulo(congregationId, moduloActivo.id, desde))
       : Promise.resolve({ data: [] })
     Promise.all([personalFetch, congregacionFetch]).then(([personalRes, congregacionRes]) => {
-      if (personalRes.error) setError(explainError(personalRes.error, 'No se pudieron cargar tus estadísticas.'))
+      if (personalRes.error) setError(explainError(personalRes.error, t('estadisticas.errorCargar')))
       setRecords(personalRes.data ?? [])
       setCongregationRecords(congregacionRes.data ?? [])
       setLoadingDatos(false)
@@ -145,26 +147,28 @@ export default function Estadisticas() {
 
   if (loadingAsignaciones || loadingDatos) return <div className="app-shell"><div className="app-screen"><SkeletonEstadisticas /></div></div>
 
-  if (!moduloActivo) return <div className="app-shell"><div className="app-screen flex flex-col items-center justify-center text-center gap-3"><p className="text-secondary">Aún no tienes ningún módulo asignado.</p><button onClick={() => navigate('/')} className="text-accent underline text-sm">Volver</button></div></div>
+  if (!moduloActivo) return <div className="app-shell"><div className="app-screen flex flex-col items-center justify-center text-center gap-3"><p className="text-secondary">{t('estadisticas.sinModuloAsignado')}</p><button onClick={() => navigate('/')} className="text-accent underline text-sm">{t('common.volver')}</button></div></div>
+
+  const periodoShortLabels = { dia: t('estadisticas.periodoShortDia'), semana: t('estadisticas.periodoShortSemana'), mes: t('estadisticas.periodoShortMes'), semestre: t('estadisticas.periodoShortSemestre'), ano: t('estadisticas.periodoShortAno') }
 
   return <div className="app-shell"><div className="app-screen flex flex-col gap-6">
-    <header className="app-header"><div className="flex items-center gap-3"><button aria-label="Volver" onClick={() => navigate(-1)} className="w-11 h-11 rounded-xl bg-surface-2 border border-border text-secondary flex items-center justify-center"><ArrowLeft className="w-5 h-5" /></button><div><p className="text-xs uppercase tracking-[0.14em] text-accent font-medium">Resumen personal</p><h1 className="text-xl font-semibold mt-1">Mis estadísticas</h1></div></div><BarChart3 className="w-5 h-5 text-accent" /></header>
+    <header className="app-header"><div className="flex items-center gap-3"><button aria-label={t('common.volver')} onClick={() => navigate(-1)} className="w-11 h-11 rounded-xl bg-surface-2 border border-border text-secondary flex items-center justify-center"><ArrowLeft className="w-5 h-5" /></button><div><p className="text-xs uppercase tracking-[0.14em] text-accent font-medium">{t('estadisticas.resumenPersonal')}</p><h1 className="text-xl font-semibold mt-1">{t('estadisticas.titulo')}</h1></div></div><BarChart3 className="w-5 h-5 text-accent" /></header>
     {misModulos.length > 1 && <div className="flex flex-wrap gap-2">{misModulos.map((m) => <button key={m.id} type="button" onClick={() => setModuloId(m.id)} className={`rounded-full px-4 py-2 text-sm font-medium border transition-colors ${moduloId === m.id ? 'bg-ink text-white border-ink' : 'bg-surface-2 text-secondary border-border'}`}>{m.nombre}</button>)}</div>}
-    <div className="grid grid-cols-2 gap-2"><button type="button" onClick={() => setScope('personal')} className={`rounded-xl px-3 py-3 text-sm font-medium border ${scope === 'personal' ? 'bg-ink text-white border-ink' : 'bg-surface-2 text-secondary border-border'}`}>Mis registros</button><button type="button" onClick={() => setScope('congregacion')} className={`rounded-xl px-3 py-3 text-sm font-medium border ${scope === 'congregacion' ? 'bg-ink text-white border-ink' : 'bg-surface-2 text-secondary border-border'}`}>Congregación</button></div>
+    <div className="grid grid-cols-2 gap-2"><button type="button" onClick={() => setScope('personal')} className={`rounded-xl px-3 py-3 text-sm font-medium border ${scope === 'personal' ? 'bg-ink text-white border-ink' : 'bg-surface-2 text-secondary border-border'}`}>{t('estadisticas.misRegistros')}</button><button type="button" onClick={() => setScope('congregacion')} className={`rounded-xl px-3 py-3 text-sm font-medium border ${scope === 'congregacion' ? 'bg-ink text-white border-ink' : 'bg-surface-2 text-secondary border-border'}`}>{t('estadisticas.congregacion')}</button></div>
     <div>
-      <div className="grid grid-cols-5 gap-1.5">{PERIODS.map((item) => <button key={item.id} type="button" onClick={() => setPeriod(item.id)} className={`rounded-xl py-2 text-xs font-medium border transition-colors ${period === item.id ? 'bg-ink text-white border-ink' : 'bg-surface-2 text-secondary border-border'}`}>{item.short}</button>)}</div>
+      <div className="grid grid-cols-5 gap-1.5">{PERIODS.map((id) => <button key={id} type="button" onClick={() => setPeriod(id)} className={`rounded-xl py-2 text-xs font-medium border transition-colors ${period === id ? 'bg-ink text-white border-ink' : 'bg-surface-2 text-secondary border-border'}`}>{periodoShortLabels[id]}</button>)}</div>
       <p className="text-xs text-secondary mt-2 text-center">{resolvedPeriodLabel(period)}</p>
     </div>
     {error && <p role="alert" className="text-sm text-danger bg-danger-bg rounded-xl p-3">{error}</p>}
     <section className="grid grid-cols-2 gap-3">
-      <div className="app-card p-4"><p className="text-xs text-secondary">Asistentes acumulados</p><p className="text-3xl font-semibold text-accent mt-2">{total}</p></div>
-      <div className="app-card p-4"><p className="text-xs text-secondary">Cultos registrados</p><p className="text-3xl font-semibold mt-2">{visibleRecords.length}</p></div>
-      <div className="app-card p-4"><p className="text-xs text-secondary">Promedio por culto</p><p className="text-3xl font-semibold mt-2">{average}</p></div>
+      <div className="app-card p-4"><p className="text-xs text-secondary">{t('estadisticas.asistentesAcumulados')}</p><p className="text-3xl font-semibold text-accent mt-2">{total}</p></div>
+      <div className="app-card p-4"><p className="text-xs text-secondary">{t('estadisticas.cultosRegistrados')}</p><p className="text-3xl font-semibold mt-2">{visibleRecords.length}</p></div>
+      <div className="app-card p-4"><p className="text-xs text-secondary">{t('estadisticas.promedioPorCulto')}</p><p className="text-3xl font-semibold mt-2">{average}</p></div>
       <div className="app-card p-4">
-        <p className="text-xs text-secondary">Tendencia</p>
-        {tendencia === null ? <p className="text-sm font-medium mt-3 text-muted">Sin periodo anterior</p> : <p className={`text-3xl font-semibold mt-2 ${tendencia >= 0 ? 'text-success' : 'text-danger'}`}>{tendencia >= 0 ? '+' : ''}{tendencia}%</p>}
+        <p className="text-xs text-secondary">{t('estadisticas.tendencia')}</p>
+        {tendencia === null ? <p className="text-sm font-medium mt-3 text-muted">{t('estadisticas.sinPeriodoAnterior')}</p> : <p className={`text-3xl font-semibold mt-2 ${tendencia >= 0 ? 'text-success' : 'text-danger'}`}>{tendencia >= 0 ? '+' : ''}{tendencia}%</p>}
       </div>
     </section>
-    <section><div className="flex items-center gap-2 mb-3"><CalendarDays className="w-4 h-4 text-accent" /><h2 className="text-sm font-medium">{scope === 'personal' ? `Mis cultos de ${moduloActivo.nombre}` : `${moduloActivo.nombre} — congregación`}</h2></div>{visibleRecords.length ? <div className="app-card p-4 flex flex-col gap-4">{[...visibleRecords].sort((a, b) => b.fecha.localeCompare(a.fecha)).map((record) => <div key={record.id}><div className="flex items-center justify-between gap-3 mb-1.5"><span className="text-xs text-secondary">{new Date(`${record.fecha}T12:00:00`).toLocaleDateString('es-CO', { day: '2-digit', month: 'short' })}{record.nombre_actividad ? ` · ${record.nombre_actividad}` : record.tipos_actividad?.nombre ? ` · ${record.tipos_actividad.nombre}` : ''}</span><span className="text-sm font-semibold">{record.total_asistentes}</span></div><div className="h-2 rounded-full bg-surface-1 overflow-hidden"><div className="h-full rounded-full bg-accent" style={{ width: `${Math.max((record.total_asistentes / max) * 100, 3)}%` }} /></div></div>)}</div> : <div className="app-card p-6 text-center text-sm text-secondary">No hay registros en este periodo.</div>}</section>
+    <section><div className="flex items-center gap-2 mb-3"><CalendarDays className="w-4 h-4 text-accent" /><h2 className="text-sm font-medium">{scope === 'personal' ? t('estadisticas.misCultosDe', { modulo: moduloActivo.nombre }) : t('estadisticas.congregacionDe', { modulo: moduloActivo.nombre })}</h2></div>{visibleRecords.length ? <div className="app-card p-4 flex flex-col gap-4">{[...visibleRecords].sort((a, b) => b.fecha.localeCompare(a.fecha)).map((record) => <div key={record.id}><div className="flex items-center justify-between gap-3 mb-1.5"><span className="text-xs text-secondary">{new Date(`${record.fecha}T12:00:00`).toLocaleDateString(localeActual(), { day: '2-digit', month: 'short' })}{record.nombre_actividad ? ` · ${record.nombre_actividad}` : record.tipos_actividad?.nombre ? ` · ${record.tipos_actividad.nombre}` : ''}</span><span className="text-sm font-semibold">{record.total_asistentes}</span></div><div className="h-2 rounded-full bg-surface-1 overflow-hidden"><div className="h-full rounded-full bg-accent" style={{ width: `${Math.max((record.total_asistentes / max) * 100, 3)}%` }} /></div></div>)}</div> : <div className="app-card p-6 text-center text-sm text-secondary">{t('estadisticas.sinRegistrosPeriodo')}</div>}</section>
   </div></div>
 }
