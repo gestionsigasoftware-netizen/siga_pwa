@@ -108,7 +108,7 @@ export default function CapturaAmigo() {
       {comites.length > 0 && <div><label className="text-sm font-medium block mb-1.5">{t('capturaAmigo.labelComiteRecibio')} <span className="text-xs text-muted">{t('common.opcional')}</span></label><select value={campos.comiteId} onChange={(e) => setCampos({ ...campos, comiteId: e.target.value })} className="input-field"><option value="">{t('common.sinEspecificar')}</option>{comites.map((c) => <option key={c.id} value={c.id}>{c.nombre}</option>)}</select></div>}
       <div><label htmlFor="fecha-contacto" className="text-sm font-medium block mb-1.5">{t('capturaAmigo.labelFechaPrimerContacto')}</label><div className="relative"><CalendarDays className="w-4 h-4 text-muted absolute left-4 top-1/2 -translate-y-1/2" /><input id="fecha-contacto" type="date" max={new Date().toLocaleDateString('en-CA')} value={fecha} onChange={(e) => setFecha(e.target.value)} className="input-field pl-11" /></div></div>
       {error && <p className="text-sm text-danger text-center">{error}</p>}
-      <button type="submit" disabled={saving} className="btn-primary flex items-center justify-center gap-2 py-4 shadow-lg shadow-ink/10">{saving ? <Loader2 className="w-5 h-5 animate-spin" /> : t('capturaAmigo.botonGuardarAmigo')}</button>
+      <button type="submit" disabled={saving} className="btn-primary flex items-center justify-center gap-2 py-4 shadow-lg shadow-night/10">{saving ? <Loader2 className="w-5 h-5 animate-spin" /> : t('capturaAmigo.botonGuardarAmigo')}</button>
     </form>
   </div></div>
 }

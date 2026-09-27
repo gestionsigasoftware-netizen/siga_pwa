@@ -1,6 +1,8 @@
 {
   "common": {
-    "language": { "switchLabel": "Cambiar idioma" },
+    "language": {
+      "switchLabel": "Cambiar idioma"
+    },
     "volver": "Volver",
     "volverAlInicio": "Volver al inicio",
     "opcional": "(opcional)",
@@ -23,6 +25,10 @@
       "evangelismo": "Misiones y Evangelismo",
       "mision_juvenil": "Misión Juvenil",
       "obra_carcelaria": "Obra Carcelaria"
+    },
+    "theme": {
+      "toLight": "Cambiar a modo claro",
+      "toDark": "Cambiar a modo oscuro"
     }
   },
   "login": {

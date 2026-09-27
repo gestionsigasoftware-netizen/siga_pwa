@@ -30,8 +30,8 @@ export default function LanguageSwitcher({ dark = false, className = '' }) {
             className={`px-2.5 py-1 rounded-full transition-colors ${
               activo
                 ? dark
-                  ? 'bg-white text-ink'
-                  : 'bg-ink text-white'
+                  ? 'bg-white text-night'
+                  : 'bg-night text-white'
                 : dark
                   ? 'text-white/60 hover:text-white'
                   : 'text-secondary hover:text-ink'

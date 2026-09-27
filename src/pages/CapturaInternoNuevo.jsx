@@ -95,7 +95,7 @@ export default function CapturaInternoNuevo() {
       <div><label htmlFor="fecha-ingreso-interno" className="text-sm font-medium block mb-1.5">{t('capturaInterno.labelFechaEntrega')}</label><div className="relative"><CalendarDays className="w-4 h-4 text-muted absolute left-4 top-1/2 -translate-y-1/2" /><input id="fecha-ingreso-interno" type="date" max={new Date().toLocaleDateString('en-CA')} value={fecha} onChange={(e) => setFecha(e.target.value)} className="input-field pl-11" /></div></div>
       <div><label className="text-sm font-medium block mb-1.5">{t('capturaInterno.labelObservaciones')} <span className="text-xs text-muted">{t('common.opcional')}</span></label><textarea value={campos.observaciones} onChange={(e) => setCampos({ ...campos, observaciones: e.target.value })} rows={2} className="input-field" placeholder={t('capturaActividad.placeholderSinNovedades')} /></div>
       {error && <p className="text-sm text-danger text-center">{error}</p>}
-      <button type="submit" disabled={saving} className="btn-primary flex items-center justify-center gap-2 py-4 shadow-lg shadow-ink/10">{saving ? <Loader2 className="w-5 h-5 animate-spin" /> : t('capturaInterno.botonGuardarInterno')}</button>
+      <button type="submit" disabled={saving} className="btn-primary flex items-center justify-center gap-2 py-4 shadow-lg shadow-night/10">{saving ? <Loader2 className="w-5 h-5 animate-spin" /> : t('capturaInterno.botonGuardarInterno')}</button>
     </form>
   </div></div>
 }

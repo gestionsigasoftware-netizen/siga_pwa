@@ -8,8 +8,11 @@ import { SkeletonHome } from '../components/Skeleton'
 import { getPendingCaptures, getRecentCaptures, syncPendingCaptures } from '../lib/offline'
 import { registrarActividad, registrarCultoCarcelaria, registrarAmigo, registrarInterno } from '../lib/supabase'
 import { MODULOS_CONOCIDOS, buscarAsignacion, esModuloObraCarcelaria, esModuloUjieres } from '../lib/modulos'
+import { useTheme } from '../hooks/useTheme.jsx'
 import LanguageSwitcher from '../components/LanguageSwitcher'
+import ThemeToggle from '../components/ThemeToggle'
 import sigapLogo from '../assets/sigap-logo.svg'
+import sigapLogoWhite from '../assets/sigap-logo-white.svg'
 
 const ICONOS = { ujieres: DoorOpen, evangelismo: Compass, mision_juvenil: BookOpen, obra_carcelaria: LockKeyhole }
 
@@ -19,6 +22,7 @@ function rutaCaptura(assignment) {
 
 export default function Home() {
   const { t } = useTranslation()
+  const { theme } = useTheme()
   const { asignaciones, loading } = useMisAsignaciones()
   const { signOut } = useAuth()
   const navigate = useNavigate()
@@ -63,11 +67,14 @@ export default function Home() {
   if (loading) return <div className="app-shell"><div className="app-screen"><SkeletonHome /></div></div>
 
   return <div className="app-shell"><div className="app-screen flex flex-col gap-6">
-    <header className="app-header">
-      <div className="flex items-center gap-3"><img src={sigapLogo} alt="SIGAP" className="h-6 w-auto" /><span className="w-px h-6 bg-border" /><p className="text-sm text-secondary">{t('home.capturaMovil')}</p></div>
+    <header className="flex flex-col gap-3">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0"><img src={theme === 'dark' ? sigapLogoWhite : sigapLogo} alt="SIGAP" className="h-6 w-auto flex-shrink-0" /><span className="w-px h-6 bg-border flex-shrink-0" /><p className="text-sm text-secondary truncate">{t('home.capturaMovil')}</p></div>
+        <div className={`status-pill flex-shrink-0 ${isOnline ? 'bg-success-bg text-success' : 'bg-warning-bg text-warning'}`}><span className={`status-dot ${isOnline ? 'bg-success' : 'bg-warning'}`} />{isOnline ? <Wifi className="w-3.5 h-3.5" /> : <WifiOff className="w-3.5 h-3.5" />}{isOnline ? t('home.conectado') : t('home.sinConexion')}</div>
+      </div>
       <div className="flex items-center gap-2">
         <LanguageSwitcher />
-        <div className={`status-pill ${isOnline ? 'bg-success-bg text-success' : 'bg-warning-bg text-warning'}`}><span className={`status-dot ${isOnline ? 'bg-success' : 'bg-warning'}`} />{isOnline ? <Wifi className="w-3.5 h-3.5" /> : <WifiOff className="w-3.5 h-3.5" />}{isOnline ? t('home.conectado') : t('home.sinConexion')}</div>
+        <ThemeToggle />
       </div>
     </header>
     {pendingCount > 0 && <div className="app-card flex items-center gap-3 p-4 border-warning/40 bg-warning-bg"><RefreshCw className="w-5 h-5 text-warning flex-shrink-0" /><div><p className="text-sm font-medium text-warning">{t('home.pendiente', { count: pendingCount })}</p><p className="text-xs text-secondary mt-0.5">{t('home.seEnviaraAuto', { count: pendingCount })}</p></div></div>}

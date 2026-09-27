@@ -3,13 +3,70 @@
 @tailwind utilities;
 
 @layer base {
-  :root { color-scheme: light; }
-  body { font-family: 'Inter', system-ui, sans-serif; background: #f4f1eb; color: #1c1f24; }
+  /* Modo dia/noche -- tokens de color como variables CSS en vez de hex
+     fijo en tailwind.config.js, mismo patron ya usado en el proyecto web
+     (siga-nacional). Los valores de :root son EXACTAMENTE los mismos hex
+     de siempre (cero cambio visual en modo claro); :root.dark los
+     redefine. El modo lo decide useTheme.jsx (clase `dark` en <html>),
+     no directamente prefers-color-scheme del sistema. */
+  :root {
+    color-scheme: light;
+
+    --color-ink-rgb: 11 11 11;
+    --color-surface-rgb: 252 252 251;
+    --color-surface-1-rgb: 244 243 241;
+    --color-surface-2-rgb: 255 255 255;
+    --color-border-rgb: 225 224 217;
+    --color-muted-rgb: 137 135 129;
+    --color-secondary-rgb: 82 81 78;
+
+    --color-accent-rgb: 42 120 214;
+    --color-accent-bg-rgb: 230 241 251;
+
+    --color-success-rgb: 0 131 0;
+    --color-success-bg-rgb: 234 243 222;
+
+    --color-warning-rgb: 201 133 0;
+    --color-warning-bg-rgb: 250 238 218;
+
+    --color-danger-rgb: 208 59 59;
+    --color-danger-bg-rgb: 252 235 235;
+
+    /* "night" es un negro FIJO, igual en los dos temas -- ver la nota
+       junto a la definicion de este color en tailwind.config.js. */
+    --color-night-rgb: 11 11 11;
+  }
+
+  :root.dark {
+    color-scheme: dark;
+
+    --color-ink-rgb: 244 243 241;
+    --color-surface-rgb: 11 11 11;
+    --color-surface-1-rgb: 22 24 28;
+    --color-surface-2-rgb: 28 31 36;
+    --color-border-rgb: 44 47 54;
+    --color-muted-rgb: 133 136 143;
+    --color-secondary-rgb: 195 198 204;
+
+    --color-accent-rgb: 91 155 224;
+    --color-accent-bg-rgb: 23 40 58;
+
+    --color-success-rgb: 74 222 128;
+    --color-success-bg-rgb: 18 51 24;
+
+    --color-warning-rgb: 242 185 77;
+    --color-warning-bg-rgb: 58 42 10;
+
+    --color-danger-rgb: 242 114 107;
+    --color-danger-bg-rgb: 58 20 20;
+  }
+
+  body { font-family: 'Inter', system-ui, sans-serif; background: rgb(var(--color-surface-rgb)); color: rgb(var(--color-ink-rgb)); }
   input, select, button, textarea { font-size: 16px; } /* evita zoom automático en iOS */
 }
 
 @layer components {
-  .btn-primary { @apply w-full bg-ink text-white py-3.5 rounded-xl text-base font-medium active:scale-[0.98] transition-transform disabled:opacity-50; }
+  .btn-primary { @apply w-full bg-night text-white py-3.5 rounded-xl text-base font-medium active:scale-[0.98] transition-transform disabled:opacity-50; }
   .input-field { @apply w-full bg-surface-2 border border-border rounded-xl py-3 px-4 text-base text-ink focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all; }
 
   /* Pensada para instalarse en el celular como app (standalone) -- debe
@@ -22,7 +79,7 @@
   .app-shell { @apply min-h-screen bg-surface flex flex-col; padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
   .app-screen { @apply w-full max-w-md mx-auto flex-1 flex flex-col px-5 py-5 sm:px-6 sm:py-6; }
   .app-header { @apply flex items-center justify-between gap-4; }
-  .app-mark { @apply w-11 h-11 rounded-xl bg-ink text-white flex items-center justify-center font-semibold text-xl shadow-lg; }
+  .app-mark { @apply w-11 h-11 rounded-xl bg-night text-white flex items-center justify-center font-semibold text-xl shadow-lg; }
   .app-card { @apply bg-surface-2 border border-border rounded-2xl shadow-[0_12px_32px_rgba(21,27,34,0.07)]; }
   .status-pill { @apply inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium; }
   .status-dot { @apply w-2 h-2 rounded-full; }

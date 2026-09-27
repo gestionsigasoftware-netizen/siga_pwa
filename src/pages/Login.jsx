@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { ArrowUpRight, Eye, EyeOff, Loader2, LockKeyhole, Mail, ShieldCheck } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import LanguageSwitcher from '../components/LanguageSwitcher'
+import ThemeToggle from '../components/ThemeToggle'
 import sigapLogoWhite from '../assets/sigap-logo-white.svg'
 
 export default function Login() {
@@ -36,12 +37,15 @@ export default function Login() {
   return (
     <div className="min-h-screen flex flex-col bg-surface-2 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
       <main className="w-full max-w-md mx-auto flex-1 flex flex-col">
-        <header className="bg-ink text-white px-6 pt-8 pb-14 sm:px-8 overflow-hidden relative flex-shrink-0">
+        <header className="bg-night text-white px-6 pt-8 pb-14 sm:px-8 overflow-hidden relative flex-shrink-0">
           <div className="absolute -right-16 -top-20 w-48 h-48 rounded-full border-[28px] border-accent/30" />
           <div className="relative">
             <div className="flex items-center justify-between gap-3">
               <img src={sigapLogoWhite} alt="SIGAP" className="h-8 w-auto" />
-              <LanguageSwitcher dark />
+              <div className="flex items-center gap-2">
+                <LanguageSwitcher dark />
+                <ThemeToggle dark />
+              </div>
             </div>
             <p className="text-[10px] uppercase tracking-[0.16em] text-white/45 mt-2">{t('login.tagline')}</p>
             <div className="mt-10 max-w-sm">
