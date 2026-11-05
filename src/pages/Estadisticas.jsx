@@ -160,7 +160,7 @@ export default function Estadisticas() {
       <p className="text-xs text-secondary mt-2 text-center">{resolvedPeriodLabel(period)}</p>
     </div>
     {error && <p role="alert" className="text-sm text-danger bg-danger-bg rounded-xl p-3">{error}</p>}
-    <section className="grid grid-cols-2 gap-3">
+    <section className="grid grid-cols-2 md:grid-cols-4 gap-3">
       <div className="app-card p-4"><p className="text-xs text-secondary">{t('estadisticas.asistentesAcumulados')}</p><p className="text-3xl font-semibold text-accent mt-2">{total}</p></div>
       <div className="app-card p-4"><p className="text-xs text-secondary">{t('estadisticas.cultosRegistrados')}</p><p className="text-3xl font-semibold mt-2">{visibleRecords.length}</p></div>
       <div className="app-card p-4"><p className="text-xs text-secondary">{t('estadisticas.promedioPorCulto')}</p><p className="text-3xl font-semibold mt-2">{average}</p></div>

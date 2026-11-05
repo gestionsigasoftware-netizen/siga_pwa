@@ -36,7 +36,7 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex flex-col bg-surface-2 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
-      <main className="w-full max-w-md mx-auto flex-1 flex flex-col">
+      <main className="w-full max-w-md md:max-w-xl lg:max-w-2xl mx-auto flex-1 flex flex-col">
         <header className="bg-night text-white px-6 pt-8 pb-14 sm:px-8 overflow-hidden relative flex-shrink-0">
           <div className="absolute -right-16 -top-20 w-48 h-48 rounded-full border-[28px] border-accent/30" />
           <div className="relative">
