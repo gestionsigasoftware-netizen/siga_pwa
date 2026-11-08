@@ -74,6 +74,7 @@
     "subtitulo": "This account only",
     "vacio": "You haven't registered anything with this account yet.",
     "errorCargar": "Couldn't load your history.",
+    "paginaDe": "Page {{pagina}} of {{total}}",
     "amigoNuevo": "New friend",
     "internoNuevo": "New inmate",
     "cultoCarcelario": "Prison service",

@@ -74,6 +74,7 @@
     "subtitulo": "Somente esta conta",
     "vacio": "Você ainda não registrou nada com esta conta.",
     "errorCargar": "Não foi possível carregar seu histórico.",
+    "paginaDe": "Página {{pagina}} de {{total}}",
     "amigoNuevo": "Novo amigo",
     "internoNuevo": "Novo interno",
     "cultoCarcelario": "Culto carcerário",
