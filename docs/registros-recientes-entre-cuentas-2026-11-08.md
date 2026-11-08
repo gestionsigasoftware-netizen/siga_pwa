@@ -1,5 +1,13 @@
 # "Registros recientes" mostraba datos de otra cuenta — 2026-11-08
 
+> **Superado el mismo día.** El arreglo de abajo (limpiar localStorage
+> al cerrar sesión) fue un primer parche rápido. El usuario pidió algo
+> mas correcto: que cada cuenta vea SOLO lo que ella registró, sin
+> depender de que alguien cerrara sesión antes. Ver
+> `historial-real-por-cuenta-2026-11-08.md` para la solución
+> definitiva (historial en el servidor, no en el teléfono) que
+> reemplaza por completo lo descrito aquí.
+
 ## Síntoma
 
 El usuario inició sesión en la PWA desde su celular y en "Registros
