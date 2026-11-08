@@ -47,8 +47,11 @@ Trae y mezcla los 4 tipos de captura, todos filtrados por
   `getMiHistorial(5)` — en vivo del servidor, cada vez que se abre la
   pantalla.
 - `Historial.jsx` (nueva, ruta `/historial`): historial completo
-  (hasta 200 registros) de la cuenta logueada. Se llega desde el
-  nuevo botón "Ver historial completo" debajo de los recientes.
+  (hasta 1000 registros) de la cuenta logueada, **paginado** en
+  pantallas fijas de 30 con Anterior/Siguiente -- nunca scroll
+  infinito ni todo pintado de una sola vez, aunque la cuenta tenga
+  cientos o miles de registros. Se llega desde el nuevo botón "Ver
+  historial completo" debajo de los recientes.
 - `src/lib/historial.js`: helper compartido `labelDeHistorial()` +
   `fechaHistorial()`, usado por ambas pantallas para no duplicar el
   armado de las etiquetas.
