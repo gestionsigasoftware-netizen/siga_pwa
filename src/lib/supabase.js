@@ -46,7 +46,7 @@ export async function getCategorias(congregacionId) {
 }
 
 export async function getTiposActividad(moduloId) {
-  return supabase.from('tipos_actividad').select('id, nombre, caracter').eq('modulo_id', moduloId).eq('activo', true)
+  return supabase.from('tipos_actividad').select('id, nombre').eq('modulo_id', moduloId).eq('activo', true)
 }
 
 /**
