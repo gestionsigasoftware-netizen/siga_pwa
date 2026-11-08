@@ -12,6 +12,13 @@ function write(key, value) {
 export function getPendingCaptures() { return read(PENDING_KEY) }
 export function getRecentCaptures() { return read(RECENT_KEY) }
 
+/**
+ * Solo borra los "recientes" (ya sincronizados, es un aviso local, no
+ * datos reales). Nunca borra PENDING_KEY -- esos son capturas sin
+ * sincronizar todavia, cerrar sesion no debe perderlas.
+ */
+export function clearRecentCaptures() { localStorage.removeItem(RECENT_KEY) }
+
 export function hasPendingCapture({ moduloId, tipoActividadId, nombreActividad, zonaId, fecha }) {
   return getPendingCaptures().some(({ tipo, payload }) => (tipo ?? 'actividad') === 'actividad'
     && payload.moduloId === moduloId
