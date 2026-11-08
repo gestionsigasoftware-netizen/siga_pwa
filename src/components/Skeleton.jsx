@@ -56,3 +56,19 @@ export function SkeletonEstadisticas() {
     </div>
   )
 }
+
+export function SkeletonHistorial() {
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="app-header"><div className="flex items-center gap-3"><SkeletonBlock className="w-11 h-11 rounded-xl flex-shrink-0" /><div className="flex flex-col gap-2"><SkeletonBlock className="w-28 h-3" /><SkeletonBlock className="w-36 h-5" /></div></div></div>
+      <div className="app-card divide-y divide-border">
+        {[0, 1, 2, 3, 4, 5].map((i) => (
+          <div key={i} className="p-3 flex items-center justify-between gap-3">
+            <SkeletonBlock className="w-2/3 h-4" />
+            <SkeletonBlock className="w-10 h-3" />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}

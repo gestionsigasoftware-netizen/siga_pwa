@@ -5,9 +5,10 @@ import { ChevronRight, LogOut, Wifi, WifiOff, RefreshCw, Clock3, BarChart3, Door
 import { useMisAsignaciones } from '../hooks/useMisAsignaciones'
 import { useAuth } from '../hooks/useAuth'
 import { SkeletonHome } from '../components/Skeleton'
-import { getPendingCaptures, getRecentCaptures, syncPendingCaptures } from '../lib/offline'
-import { registrarActividad, registrarCultoCarcelaria, registrarAmigo, registrarInterno } from '../lib/supabase'
+import { getPendingCaptures, syncPendingCaptures } from '../lib/offline'
+import { registrarActividad, registrarCultoCarcelaria, registrarAmigo, registrarInterno, getMiHistorial } from '../lib/supabase'
 import { MODULOS_CONOCIDOS, buscarAsignacion, esModuloObraCarcelaria, esModuloUjieres } from '../lib/modulos'
+import { labelDeHistorial, fechaHistorial } from '../lib/historial'
 import { useTheme } from '../hooks/useTheme.jsx'
 import LanguageSwitcher from '../components/LanguageSwitcher'
 import ThemeToggle from '../components/ThemeToggle'
@@ -28,14 +29,22 @@ export default function Home() {
   const navigate = useNavigate()
   const [isOnline, setIsOnline] = useState(navigator.onLine)
   const [pendingCount, setPendingCount] = useState(() => getPendingCaptures().length)
-  const [recentCaptures, setRecentCaptures] = useState(() => getRecentCaptures())
+  const [misRecientes, setMisRecientes] = useState([])
   const [avisoSinPermiso, setAvisoSinPermiso] = useState(null)
+
+  // "Mis recientes" viene siempre del servidor filtrado por la cuenta
+  // que inicio sesion (getMiHistorial) -- nunca de localStorage, que
+  // no distingue entre cuentas en el mismo telefono.
+  async function cargarRecientes() {
+    const { data } = await getMiHistorial(5)
+    setMisRecientes(data)
+  }
 
   async function syncCaptures() {
     if (!navigator.onLine) return
     const result = await syncPendingCaptures({ actividad: registrarActividad, obra_carcelaria: registrarCultoCarcelaria, amigo: registrarAmigo, interno_carcelaria: registrarInterno })
     setPendingCount(result.pending)
-    setRecentCaptures(getRecentCaptures())
+    if (result.synced > 0) cargarRecientes()
   }
 
   useEffect(() => {
@@ -44,6 +53,7 @@ export default function Home() {
     window.addEventListener('offline', updateConnection)
     window.addEventListener('online', syncCaptures)
     syncCaptures()
+    cargarRecientes()
     return () => {
       window.removeEventListener('online', updateConnection)
       window.removeEventListener('offline', updateConnection)
@@ -99,7 +109,11 @@ export default function Home() {
       </div>
     })}</div>
     <button onClick={() => navigate('/estadisticas')} className="app-card flex items-center justify-center gap-2 p-4 text-sm font-medium text-accent active:scale-[0.98] transition-transform"><BarChart3 className="w-4 h-4" /> {t('home.verMisEstadisticas')}</button>
-    {recentCaptures.length > 0 && <section><div className="flex items-center gap-2 mb-3"><Clock3 className="w-4 h-4 text-accent" /><h2 className="text-sm font-medium">{t('home.registrosRecientes')}</h2></div><div className="app-card divide-y divide-border">{recentCaptures.slice(0, 4).map((capture) => <div key={capture.id} className="p-3 flex items-center justify-between gap-3"><span className="text-sm text-secondary truncate">{capture.label}</span><span className="text-xs text-success flex-shrink-0">{t('home.sincronizado')}</span></div>)}</div></section>}
+    {misRecientes.length > 0 && <section>
+      <div className="flex items-center gap-2 mb-3"><Clock3 className="w-4 h-4 text-accent" /><h2 className="text-sm font-medium">{t('home.registrosRecientes')}</h2></div>
+      <div className="app-card divide-y divide-border">{misRecientes.map((item) => <div key={item.id} className="p-3 flex items-center justify-between gap-3"><span className="text-sm text-secondary truncate">{labelDeHistorial(item, t)}</span><span className="text-xs text-muted flex-shrink-0">{fechaHistorial(item.createdAt)}</span></div>)}</div>
+      <button onClick={() => navigate('/historial')} className="w-full text-center text-sm font-medium text-accent py-3">{t('home.verHistorialCompleto')}</button>
+    </section>}
     <button onClick={signOut} className="flex items-center gap-2 text-sm text-secondary mt-auto self-center py-3 px-4"><LogOut className="w-4 h-4" /> {t('home.cerrarSesion')}</button>
   </div></div>
 }

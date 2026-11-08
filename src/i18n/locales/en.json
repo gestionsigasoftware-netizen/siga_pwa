@@ -66,8 +66,20 @@
     "registrarInternoNuevo": "Register new inmate",
     "verMisEstadisticas": "View my statistics",
     "registrosRecientes": "Recent records",
-    "sincronizado": "Synced",
+    "verHistorialCompleto": "View full history",
     "cerrarSesion": "Sign out"
+  },
+  "historial": {
+    "titulo": "My history",
+    "subtitulo": "This account only",
+    "vacio": "You haven't registered anything with this account yet.",
+    "errorCargar": "Couldn't load your history.",
+    "amigoNuevo": "New friend",
+    "internoNuevo": "New inmate",
+    "cultoCarcelario": "Prison service",
+    "actividadGenerica": "Service",
+    "asistentesCantidad_one": "{{count}} attendee",
+    "asistentesCantidad_other": "{{count}} attendees"
   },
   "estadisticas": {
     "periodoShortDia": "Today",

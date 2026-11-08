@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { ArrowLeft, CalendarDays, CheckCircle2, Loader2, Wifi } from 'lucide-react'
 import { useMisAsignaciones } from '../hooks/useMisAsignaciones'
 import { getComites, getTiposActividad, registrarAmigo } from '../lib/supabase'
-import { queueCapture, rememberCapture } from '../lib/offline'
+import { queueCapture } from '../lib/offline'
 import { SkeletonForm } from '../components/Skeleton'
 
 const CAMPOS_VACIOS = { nombres: '', telefono: '', direccion: '', sector: '', invitadoPor: '', metodologiaId: '', comiteId: '' }
@@ -83,7 +83,6 @@ export default function CapturaAmigo() {
     const { error: saveError } = await registrarAmigo(payload)
     setSaving(false)
     if (saveError) { setError(t('common.errorGuardar', { mensaje: saveError.message })); return }
-    rememberCapture({ label: `Amigo nuevo · ${payload.nombres}`, payload, createdAt: new Date().toISOString() })
     setSavedOffline(false)
     setSuccess(true)
   }

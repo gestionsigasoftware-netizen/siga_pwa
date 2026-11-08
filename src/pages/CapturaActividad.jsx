@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { ArrowLeft, BarChart3, CalendarDays, CheckCircle2, Loader2, Wifi } from 'lucide-react'
 import { useMisAsignaciones } from '../hooks/useMisAsignaciones'
 import { findDuplicateActivity, getCategorias, getCaracteresCulto, getTiposActividad, getUjieresCongregacion, registrarActividad } from '../lib/supabase'
-import { hasPendingCapture, queueCapture, rememberCapture } from '../lib/offline'
+import { hasPendingCapture, queueCapture } from '../lib/offline'
 import { esModuloUjieres } from '../lib/modulos'
 import { SkeletonForm } from '../components/Skeleton'
 
@@ -113,7 +113,6 @@ export default function CapturaActividad() {
     const { error: saveError } = await registrarActividad(payload)
     setSaving(false)
     if (saveError) { setError(t('common.errorGuardar', { mensaje: saveError.message })); return }
-    rememberCapture({ label: `${modulo.nombre_modulo} · ${total} asistentes`, payload, createdAt: new Date().toISOString() })
     setSavedOffline(false)
     setSuccess(true)
   }

@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { ArrowLeft, BarChart3, CalendarDays, CheckCircle2, Loader2, Wifi } from 'lucide-react'
 import { useMisAsignaciones } from '../hooks/useMisAsignaciones'
 import { findDuplicateCultoCarcelaria, getCentrosReclusion, registrarCultoCarcelaria } from '../lib/supabase'
-import { hasPendingCultoCarcelaria, queueCapture, rememberCapture } from '../lib/offline'
+import { hasPendingCultoCarcelaria, queueCapture } from '../lib/offline'
 import { SkeletonForm } from '../components/Skeleton'
 
 export default function CapturaCarcelaria() {
@@ -91,7 +91,6 @@ export default function CapturaCarcelaria() {
     const { error: saveError } = await registrarCultoCarcelaria(payload)
     setSaving(false)
     if (saveError) { setError(t('common.errorGuardar', { mensaje: saveError.message })); return }
-    rememberCapture({ label: `${modulo.nombre_modulo} · ${total} asistentes`, tipo: 'obra_carcelaria', payload, createdAt: new Date().toISOString() })
     setSavedOffline(false)
     setSuccess(true)
   }

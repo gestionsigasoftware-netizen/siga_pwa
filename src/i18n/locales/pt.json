@@ -66,8 +66,20 @@
     "registrarInternoNuevo": "Registrar novo interno",
     "verMisEstadisticas": "Ver minhas estatísticas",
     "registrosRecientes": "Registros recentes",
-    "sincronizado": "Sincronizado",
+    "verHistorialCompleto": "Ver histórico completo",
     "cerrarSesion": "Sair"
+  },
+  "historial": {
+    "titulo": "Meu histórico",
+    "subtitulo": "Somente esta conta",
+    "vacio": "Você ainda não registrou nada com esta conta.",
+    "errorCargar": "Não foi possível carregar seu histórico.",
+    "amigoNuevo": "Novo amigo",
+    "internoNuevo": "Novo interno",
+    "cultoCarcelario": "Culto carcerário",
+    "actividadGenerica": "Culto",
+    "asistentesCantidad_one": "{{count}} participante",
+    "asistentesCantidad_other": "{{count}} participantes"
   },
   "estadisticas": {
     "periodoShortDia": "Hoje",

@@ -227,3 +227,36 @@ export async function getCultosCarcelariaCongregacion(congregacionId, desde) {
   const { data, error } = await supabase.from('obra_carcelaria_cultos').select('id, fecha, asistentes_total').eq('congregacion_id', congregacionId).gte('fecha', desde).order('fecha', { ascending: false })
   return { data: (data ?? []).map((row) => ({ id: row.id, fecha: row.fecha, total_asistentes: row.asistentes_total, nombre_actividad: 'Culto carcelario' })), error }
 }
+
+/**
+ * "Mi historial": mezcla los 4 tipos de captura de la PWA (actividad
+ * generica, amigo nuevo, interno nuevo, culto carcelario), todos
+ * filtrados por `capturado_por = auth.uid()` -- la cuenta que
+ * efectivamente uso el telefono para capturar, no quien aparezca como
+ * "responsable" de un culto (eso es un campo distinto, elegido en el
+ * formulario y puede ser otra persona). Reemplaza el antiguo
+ * "recientes" de localStorage: ahora vive en el servidor, por cuenta,
+ * sin importar el dispositivo.
+ */
+export async function getMiHistorial(limite = 200) {
+  const { data: userData } = await supabase.auth.getUser()
+  if (!userData?.user) return { data: [], error: new Error('No autenticado') }
+  const uid = userData.user.id
+
+  const [actividad, amigos, internos, cultos] = await Promise.all([
+    supabase.from('registros_actividad').select('id, created_at, nombre_actividad, total_asistentes, tipos_actividad(nombre)').eq('capturado_por', uid).order('created_at', { ascending: false }).limit(limite),
+    supabase.from('amigos').select('id, created_at, nombres').eq('capturado_por', uid).order('created_at', { ascending: false }).limit(limite),
+    supabase.from('obra_carcelaria_internos').select('id, created_at, nombres, apellidos').eq('capturado_por', uid).order('created_at', { ascending: false }).limit(limite),
+    supabase.from('obra_carcelaria_cultos').select('id, created_at, asistentes_total').eq('capturado_por', uid).order('created_at', { ascending: false }).limit(limite),
+  ])
+
+  const error = actividad.error || amigos.error || internos.error || cultos.error || null
+  const items = [
+    ...(actividad.data ?? []).map((r) => ({ id: `actividad-${r.id}`, createdAt: r.created_at, tipo: 'actividad', nombre: r.tipos_actividad?.nombre || r.nombre_actividad || null, cantidad: r.total_asistentes })),
+    ...(amigos.data ?? []).map((r) => ({ id: `amigo-${r.id}`, createdAt: r.created_at, tipo: 'amigo', nombre: r.nombres, cantidad: null })),
+    ...(internos.data ?? []).map((r) => ({ id: `interno-${r.id}`, createdAt: r.created_at, tipo: 'interno', nombre: `${r.nombres} ${r.apellidos}`, cantidad: null })),
+    ...(cultos.data ?? []).map((r) => ({ id: `culto-${r.id}`, createdAt: r.created_at, tipo: 'culto', nombre: null, cantidad: r.asistentes_total })),
+  ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+
+  return { data: items, error }
+}
