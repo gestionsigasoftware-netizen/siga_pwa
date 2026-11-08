@@ -77,13 +77,15 @@
      las areas seguras (notch / barra inferior); el screen solo aporta el
      padding interno del contenido, sin borde ni sombra propios.
      El ancho del contenido crece por pasos en md/lg (768/1024px -- el
-     ancho real de un iPad en portrait/landscape) para que la asistencia
-     se pueda tomar comoda desde una tablet, sin quedar en una tira
-     angosta de celular flotando en medio de la pantalla ni estirarse a
-     pantalla completa (un formulario de una sola columna no se ve bien
-     a 1000px de ancho). */
+     ancho real de un iPad/tablet en portrait/landscape): en celular
+     (debajo de md) se queda igual que siempre; en tablet/iPad portrait
+     (md) ocupa casi todo el ancho real del dispositivo (768px); en
+     tablet/iPad landscape o mas ancho (lg) ya no tiene tope -- se ajusta
+     al ancho real de la pantalla, solo con el padding como margen, para
+     que la app instalada se vea a pantalla completa en esos dispositivos
+     en vez de quedar centrada con espacio muerto a los lados. */
   .app-shell { @apply min-h-screen bg-surface flex flex-col; padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
-  .app-screen { @apply w-full max-w-md md:max-w-xl lg:max-w-2xl mx-auto flex-1 flex flex-col px-5 py-5 sm:px-6 sm:py-6; }
+  .app-screen { @apply w-full max-w-md md:max-w-3xl lg:max-w-none mx-auto flex-1 flex flex-col px-5 py-5 sm:px-6 sm:py-6 lg:px-12; }
   .app-header { @apply flex items-center justify-between gap-4; }
   .app-mark { @apply w-11 h-11 rounded-xl bg-night text-white flex items-center justify-center font-semibold text-xl shadow-lg; }
   .app-card { @apply bg-surface-2 border border-border rounded-2xl shadow-[0_12px_32px_rgba(21,27,34,0.07)]; }
